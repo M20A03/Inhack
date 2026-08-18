@@ -22,10 +22,11 @@ export function useFaceTracking(isActive: boolean) {
   });
   
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
+  const [isMockMode, setIsMockMode] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const requestRef = useRef<number>();
 
-  // Load MediaPipe FaceLandmarker model
+  // Load MediaPipe FaceLandmarker model with a timeout fallback
   useEffect(() => {
     let active = true;
     const initializeTracker = async () => {
@@ -34,7 +35,7 @@ export function useFaceTracking(isActive: boolean) {
         const filesetResolver = await FilesetResolver.forVisionTasks(
           'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm'
         );
-        const landmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+        const landmarkerPromise = FaceLandmarker.createFromOptions(filesetResolver, {
           baseOptions: {
             modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
             delegate: 'GPU'
@@ -43,13 +44,22 @@ export function useFaceTracking(isActive: boolean) {
           runningMode: 'VIDEO',
           numFaces: 1
         });
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Face Model Timeout')), 4000)
+        );
+
+        const landmarker = await Promise.race([landmarkerPromise, timeoutPromise]) as FaceLandmarker;
         if (active) {
           setFaceLandmarker(landmarker);
           setStatus('Model Ready');
         }
       } catch (err) {
-        console.error('Error loading face model:', err);
-        if (active) setStatus('Error loading model');
+        console.warn('Face model loading failed or timed out, activating simulation mode:', err);
+        if (active) {
+          setIsMockMode(true);
+          setStatus('⚠️ Model Timed Out. Simulator Active.');
+        }
       }
     };
     initializeTracker();
@@ -59,8 +69,7 @@ export function useFaceTracking(isActive: boolean) {
   // Manage camera and predictions inside the hook
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (!isActive || !faceLandmarker || !videoElement) {
-      // Cleanup camera stream
+    if (!isActive || !videoElement) {
       if (videoElement && videoElement.srcObject) {
         const stream = videoElement.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -69,6 +78,13 @@ export function useFaceTracking(isActive: boolean) {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
       return;
     }
+
+    if (isMockMode) {
+      // In mock mode we don't start the webcam, the UI will present buttons
+      return;
+    }
+
+    if (!faceLandmarker) return;
 
     let activeStream: MediaStream | null = null;
 
@@ -88,7 +104,8 @@ export function useFaceTracking(isActive: boolean) {
         };
       } catch (err) {
         console.error(err);
-        setStatus('Camera access denied');
+        setIsMockMode(true);
+        setStatus('⚠️ Camera blocked. Simulator Active.');
       }
     };
 
@@ -143,7 +160,7 @@ export function useFaceTracking(isActive: boolean) {
         blinkBoth: false,
       });
     };
-  }, [isActive, faceLandmarker]);
+  }, [isActive, faceLandmarker, isMockMode]);
 
-  return { status, gestures, videoRef };
+  return { status, gestures, setGestures, videoRef, isMockMode };
 }
