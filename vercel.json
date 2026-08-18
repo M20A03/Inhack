@@ -1,6 +1,18 @@
 {
-  "buildCommand": "cd sahayak-physical && npm install && npm run build",
-  "outputDirectory": "sahayak-physical/dist",
-  "installCommand": "cd sahayak-physical && npm install",
-  "framework": "vite"
+  "version": 2,
+  "builds": [
+    {
+      "src": "sahayak-physical/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/sahayak-physical/$1"
+    }
+  ]
 }
