@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #000000;
+  --color-text: #FFD700;
+  --color-accent: #FFD700;
+  --color-accent-fg: #000000;
+  --touch-target: 60px;
+  --font-size-base: 18px;
+  --font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+/* Base styling for high contrast */
+button {
+  min-height: var(--touch-target);
+  font-size: inherit;
+  font-family: inherit;
+}
+
+button:focus-visible {
+  outline: 4px solid #FFD700;
+  outline-offset: 4px;
+}
+
+.flashing-border {
+  animation: flash 1s infinite alternate;
+}
+
+@keyframes flash {
+  0% { border-color: transparent; }
+  100% { border-color: #FFD700; }
+}
+
+.glass-panel {
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.item-scanning {
+  animation: scan-highlight 1.5s infinite;
+}
+
+@keyframes scan-highlight {
+  0% { box-shadow: 0 0 0 0px rgba(255, 215, 0, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(255, 215, 0, 1); }
+  100% { box-shadow: 0 0 0 0px rgba(255, 215, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

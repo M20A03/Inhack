@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #121212;
+  --color-text: #ffffff;
+  --color-accent: #3b82f6;
+  --color-accent-fg: #ffffff;
+  --touch-target: 44px;
+  --font-size-base: 16px;
+  --font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+/* General Mode */
+body.mode-general {
+  --color-bg: #1a1a1a;
+  --color-text: #e0e0e0;
+  --color-accent: #facc15;
+  --color-accent-fg: #000000;
+  --touch-target: 60px;
+}
+
+/* Motor / Physical Mode */
+body.mode-motor {
+  --color-bg: #121212;
+  --color-text: #ffffff;
+  --color-accent: #4ade80;
+  --color-accent-fg: #000000;
+  --touch-target: 76px;
+  --font-size-base: 20px;
+}
+
+/* Visual / Blind Mode */
+body.mode-visual {
+  --color-bg: #000000;
+  --color-text: #FFD700;
+  --color-accent: #FFD700;
+  --color-accent-fg: #000000;
+  --touch-target: 60px;
+  --font-size-base: 24px;
+  font-weight: bold;
+}
+
+/* Cognitive / Dyslexia Mode */
+body.mode-cognitive {
+  --color-bg: #fdf6e3;
+  --color-text: #073642;
+  --color-accent: #268bd2;
+  --color-accent-fg: #ffffff;
+  --touch-target: 60px;
+  --font-size-base: 18px;
+  --font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+}
+
+/* Hearing Impaired Mode */
+body.mode-hearing {
+  --color-bg: #121212;
+  --color-text: #ffffff;
+  --color-accent: #f43f5e;
+  --color-accent-fg: #ffffff;
+  --touch-target: 60px;
+}
+
+.flashing-border {
+  animation: flash 1s infinite alternate;
+}
+
+@keyframes flash {
+  0% { border-color: transparent; }
+  100% { border-color: #f43f5e; }
+}
+
+button {
+  min-height: var(--touch-target);
+  font-size: inherit;
+  font-family: inherit;
+}
+
+button:focus-visible {
+  outline: 4px solid #FFD700;
+  outline-offset: 2px;
+}
+
+/* Hide specific elements in Cognitive mode */
+body.mode-cognitive .cognitive-hide {
+  display: none !important;
+}
