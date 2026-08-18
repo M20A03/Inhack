@@ -8,7 +8,11 @@
     "build": "tsc -b && vite build",
     "vercel-build": "npm run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:add": "npx cap add android",
+    "cap:sync": "npx cap sync",
+    "cap:open": "npx cap open android",
+    "apk:build": "npm run build && npx cap sync && npx cap open android"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -24,7 +28,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "spotify-web-api-js": "^1.5.2",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

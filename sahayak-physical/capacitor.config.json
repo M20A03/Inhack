@@ -1,0 +1,13 @@
+{
+  "appId": "com.sahayak.app",
+  "appName": "Sahayak",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

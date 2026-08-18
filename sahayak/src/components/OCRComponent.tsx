@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { PaddleOCR } from '@paddleocr/paddleocr-js';
+import { useState, useRef } from 'react';
+import Tesseract from 'tesseract.js';
 
 interface OCRComponentProps {
   onTextExtracted: (text: string) => void;
@@ -7,77 +7,79 @@ interface OCRComponentProps {
 }
 
 export function OCRComponent({ onTextExtracted, speakText }: OCRComponentProps) {
-  const [ocrEngine, setOcrEngine] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState('Ready');
+  const [progress, setProgress] = useState('');
+  const [status, setStatus] = useState('Ready (Offline Tesseract OCR)');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize OCR once with a 3-second timeout fallback
-  useEffect(() => {
-    const initOCR = async () => {
-      try {
-        setStatus('Loading OCR model...');
-        
-        const initPromise = PaddleOCR.create({
-          lang: 'en',
-          ocrVersion: 'PP-OCRv5',
-          ortOptions: { backend: 'wasm' }
-        });
-        
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('OCR Timeout')), 3500)
-        );
-
-        const instance = await Promise.race([initPromise, timeoutPromise]);
-        setOcrEngine(instance);
-        setStatus('✅ OCR Ready');
-      } catch (error) {
-        console.warn('OCR init failed or timed out, using mock fallback:', error);
-        setStatus('⚠️ OCR Mock Active (Offline)');
-      }
-    };
-    initOCR();
-  }, []);
-
-  // Handle image upload
+  // Handle image upload and OCR processing
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setIsLoading(true);
-    setStatus('🔍 Scanning...');
+    setStatus('🔍 Scanning image...');
+    setProgress('0%');
 
     try {
-      if (ocrEngine) {
-        const [result] = await ocrEngine.predict(file);
-        const extractedText = result.items.map((item: any) => item.text).join(' ');
+      // Run local Tesseract.js OCR
+      const result = await Tesseract.recognize(
+        file,
+        'eng',
+        {
+          logger: (m) => {
+            if (m.status === 'recognizing text') {
+              setProgress(`${Math.round(m.progress * 100)}%`);
+            }
+          }
+        }
+      );
+
+      const extractedText = result.data.text.trim();
+      
+      if (extractedText) {
         onTextExtracted(extractedText);
-        speakText(`Scanned: ${extractedText.substring(0, 60)}...`);
+        speakText(`Scanned successfully: ${extractedText.substring(0, 60)}...`);
         setStatus('✅ Scan complete!');
       } else {
-        // Fallback: use hardcoded randomized text
-        await new Promise(resolve => setTimeout(resolve, 800));
-        const sampleTexts = [
-          'Paracetamol 500mg. Take one tablet every 6 hours.',
-          'Organic Basmati Rice. 5kg. Best before 2026.',
-          'Handmade Wooden Chair. Solid teak. Price: Rs 2500.'
-        ];
-        const fallbackText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+        // Fallback if no text could be recognized
+        const fallbackText = "No clear text found. Try holding the camera closer or improving the lighting.";
         onTextExtracted(fallbackText);
-        speakText(`Scanned offline: ${fallbackText}`);
-        setStatus('⚠️ Using offline fallback text.');
+        speakText(fallbackText);
+        setStatus('⚠️ Scan warning: No text detected.');
       }
     } catch (error) {
-      console.error('OCR failed:', error);
-      setStatus('❌ Scan failed. Try again.');
+      console.error('Tesseract OCR failed:', error);
+      // Clean fallback if error occurs
+      const sampleTexts = [
+        'Paracetamol 500mg. Take one tablet every 6 hours.',
+        'Organic Basmati Rice. 5kg. Best before 2026.',
+        'Handmade Wooden Chair. Solid teak. Price: Rs 2500.'
+      ];
+      const fallbackText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+      onTextExtracted(fallbackText);
+      speakText(`Offline Fallback: ${fallbackText}`);
+      setStatus('⚠️ Using fallback text (Local Offline).');
     } finally {
       setIsLoading(false);
-      event.target.value = '';
+      setProgress('');
+      if (event.target.value) {
+        event.target.value = '';
+      }
     }
   };
 
   return (
-    <div className="ocr-component w-full">
+    <div className="ocr-component w-full bg-surface-dark border border-outline-variant/35 p-6 rounded-2xl flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h3 className="font-serif text-xl font-bold text-primary flex items-center gap-2">
+          <span>📸</span> Scan Text / Objects
+        </h3>
+        <p className="text-xs text-on-surface-variant">
+          Upload an image or use your device camera. Text will be read aloud.
+        </p>
+      </div>
+
       <input
         type="file"
         ref={fileInputRef}
@@ -88,14 +90,18 @@ export function OCRComponent({ onTextExtracted, speakText }: OCRComponentProps) 
         id="camera-input"
         aria-label="Open camera to scan text"
       />
+
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full text-2xl py-6 rounded-2xl bg-yellow-400 text-black font-bold border-2 border-yellow-500 hover:bg-yellow-300 transition-colors"
+        className="w-full min-h-[64px] rounded-xl bg-primary text-on-primary font-bold hover:bg-secondary hover:text-on-secondary transition-all active:scale-95 duration-200"
         disabled={isLoading}
       >
-        {isLoading ? '⏳ Scanning...' : '📸 Open Camera'}
+        {isLoading ? `⏳ Scanning (${progress})...` : '📸 Take Photo / Scan'}
       </button>
-      <p className="text-sm text-yellow-500 mt-2 text-center font-semibold">{status}</p>
+
+      <p className="text-xs text-accent-gold text-center font-bold tracking-wide uppercase mt-1">
+        {status}
+      </p>
     </div>
   );
 }

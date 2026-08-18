@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { OCRComponent } from './OCRComponent';
-import { Camera, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { speakText } from '../hooks/useSpeechRecognition';
 
 interface ScanComponentProps {
@@ -16,25 +16,18 @@ export function ScanComponent({ onTextExtracted }: ScanComponentProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6">
-      <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-400">
-        <Camera /> Scan Text / Objects
-      </h2>
-      <p className="text-sm text-yellow-300">
-        Align a document, pill bottle, or product in front of your camera. The app will read the text automatically.
-      </p>
-
+    <div className="w-full flex flex-col gap-4">
       <OCRComponent onTextExtracted={handleTextExtracted} speakText={speakText} />
 
       {scannedText && (
-        <div className="mt-4 p-4 bg-zinc-900 rounded-xl border border-yellow-500/30 flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-yellow-500 text-xs font-bold font-mono">
+        <div className="p-5 bg-surface-dark border border-outline-variant/35 rounded-2xl flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-accent-gold text-xs font-bold font-mono">
             <FileText size={14} /> EXTRACTED TEXT
           </div>
-          <p className="text-sm text-yellow-400 font-semibold">{scannedText}</p>
+          <p className="text-sm text-on-surface font-semibold bg-deep-forest/40 p-3 rounded-xl border border-outline-variant/20">{scannedText}</p>
           <button
             onClick={() => speakText(scannedText)}
-            className="mt-2 py-3 bg-zinc-950 border border-yellow-500 text-yellow-400 rounded-lg text-xs font-bold hover:bg-zinc-900"
+            className="w-full min-h-[48px] bg-deep-forest text-primary border border-outline-variant/35 rounded-xl text-xs font-bold hover:bg-surface-dark active:scale-95 duration-150"
           >
             🔊 Read Aloud
           </button>
