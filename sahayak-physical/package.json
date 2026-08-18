@@ -15,6 +15,7 @@
     "@mediapipe/tasks-vision": "^1.0.1",
     "@paddleocr/paddleocr-js": "^0.4.2",
     "compromise": "^14.16.0",
+    "firebase": "^12.17.1",
     "idb": "^8.0.3",
     "lucide-react": "^1.31.0",
     "react": "^18.3.1",

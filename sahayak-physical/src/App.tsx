@@ -4,7 +4,12 @@ import { parseCommand, generateResponse } from './utils/commandProcessor';
 import { saveItem, getAllItems, deleteItem, clearAllItems, SavedItem } from './utils/storage';
 import { executeCommand } from './utils/accessibilityService';
 import { FaceTracker } from './components/FaceTracker';
-
+import { EyeTracking } from './components/EyeTracking';
+import { SwitchControl } from './components/SwitchControl';
+import { auth, signOut } from './utils/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { Login } from './components/Login';
+import { LogOut } from 'lucide-react';
 // Disable standard TS error for window SpeechRecognition
 declare global {
   interface Window {
@@ -22,7 +27,18 @@ function App() {
   const [isListening, setIsListening] = useState(false);
   const [executionLogs, setExecutionLogs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const recognitionRef = useRef<any>(null);
+
+  // --- Auth Listener ---
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // --- Load saved items ---
   useEffect(() => {
@@ -183,25 +199,44 @@ function App() {
     await loadItems();
   };
 
+  if (authLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50"><p className="text-gray-500">Loading...</p></div>;
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
   // --- Render ---
   return (
-    <div className="app-container min-h-screen bg-black text-yellow-400 p-4 font-sans">
+    <div className="app-container min-h-screen bg-gray-50 text-gray-900 p-4 font-sans">
       {/* Header */}
-      <header className="text-center py-4">
-        <h1 className="text-4xl font-bold">🤝 Sahayak</h1>
-        <p className="text-gray-400 text-sm">Offline Accessibility Assistant</p>
+      <header className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-extrabold text-blue-700 tracking-tight flex items-center gap-2">
+            <span className="text-4xl">🤝</span> Sahayak
+          </h1>
+          <p className="text-gray-500 text-sm font-medium mt-1">Offline Accessibility Assistant</p>
+        </div>
+        <button 
+          onClick={() => signOut(auth)}
+          className="flex items-center gap-2 px-3 py-2 bg-white text-gray-600 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-100 transition-colors text-sm font-medium"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign Out
+        </button>
       </header>
 
       {/* Mode Selector */}
-      <div className="mode-selector grid grid-cols-3 gap-2 mb-4">
+      <div className="mode-selector grid grid-cols-3 gap-3 mb-6">
         {['voice', 'switch', 'face', 'eye', 'hybrid'].map((mode) => (
           <button
             key={mode}
             onClick={() => setCurrentMode(mode)}
-            className={`mode-btn p-3 rounded-xl text-sm font-bold transition-all ${
+            className={`mode-btn p-3 rounded-xl text-sm font-bold transition-all shadow-sm border ${
               currentMode === mode 
-                ? 'bg-yellow-400 text-black' 
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-300 ring-offset-1' 
+                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
             }`}
           >
             {mode === 'voice' && '🎤 Voice'}
@@ -214,57 +249,81 @@ function App() {
       </div>
 
       {/* OCR Component */}
-      <div className="card bg-gray-900 rounded-2xl p-4 border border-yellow-600 mb-4">
-        <h2 className="text-xl font-bold mb-2 text-white">📷 Scan Text</h2>
+      <div className="card bg-white rounded-2xl p-5 shadow-sm border border-gray-200 mb-5">
+        <h2 className="text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
+          <span>📷</span> Scan Text
+        </h2>
         <OCRComponent 
           onTextExtracted={handleTextExtracted} 
           speakText={speakText}
         />
         {ocrText && (
-          <div className="mt-3 p-3 bg-black rounded-lg border border-gray-700">
-            <p className="text-sm text-gray-400">📄 Scanned:</p>
-            <p className="text-white">{ocrText}</p>
+          <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Scanned Result</p>
+            <p className="text-gray-800 font-medium">{ocrText}</p>
           </div>
         )}
       </div>
 
       {/* Face Tracker */}
-      <div className="mb-4">
+      <div className="mb-5">
          <FaceTracker 
             isActive={currentMode === 'face' || currentMode === 'hybrid'} 
             onGesture={handleFaceGesture} 
          />
       </div>
 
+      {/* Eye Tracker */}
+      <div className="mb-5">
+         <EyeTracking 
+            isActive={currentMode === 'eye' || currentMode === 'hybrid'} 
+            onCommand={processCommand} 
+         />
+      </div>
+
+      {/* Switch Control */}
+      <div className="mb-5">
+         <SwitchControl 
+            isActive={currentMode === 'switch' || currentMode === 'hybrid'} 
+            onCommand={processCommand}
+         />
+      </div>
+
       {/* Voice Control */}
-      <div className="card bg-gray-900 rounded-2xl p-4 border border-yellow-600 mb-4">
-        <h2 className="text-xl font-bold mb-2 text-white">🎤 Speak Command</h2>
+      <div className="card bg-white rounded-2xl p-5 shadow-sm border border-gray-200 mb-5">
+        <h2 className="text-lg font-bold mb-3 text-gray-800 flex items-center gap-2">
+          <span>🎤</span> Speak Command
+        </h2>
         <button
           onClick={startListening}
-          disabled={isLoading}
-          className={`w-full py-4 rounded-2xl text-2xl font-bold transition-colors ${
-            isListening 
-              ? 'bg-red-500 text-white' 
-              : 'bg-yellow-400 text-black hover:bg-yellow-300'
+          disabled={isLoading || (currentMode !== 'voice' && currentMode !== 'hybrid')}
+          className={`w-full py-4 rounded-xl text-xl font-bold transition-all shadow-sm border ${
+            currentMode !== 'voice' && currentMode !== 'hybrid'
+              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+              : isListening 
+                ? 'bg-red-500 text-white border-red-600 animate-pulse' 
+                : 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700'
           }`}
         >
           {isListening ? '⏳ Listening...' : isLoading ? '🔄 Processing...' : '🎙️ Tap & Speak'}
         </button>
+        
         {voiceCommand && (
-          <div className="mt-3 p-3 bg-black rounded-lg border border-gray-700">
-            <p className="text-sm text-gray-400">🗣️ You said:</p>
-            <p className="text-white">{voiceCommand}</p>
+          <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">You said</p>
+            <p className="text-gray-800 font-medium">{voiceCommand}</p>
           </div>
         )}
+        
         {aiResponse && (
-          <div className="mt-3 p-4 bg-green-900/30 rounded-lg border border-green-500">
-            <p className="text-sm text-green-400">🤖 Assistant:</p>
-            <p className="text-white text-lg">{aiResponse}</p>
+          <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Assistant</p>
+            <p className="text-blue-900 font-medium text-lg">{aiResponse}</p>
             <button
               onClick={() => speakText(aiResponse)}
-              className="mt-2 text-sm text-yellow-400 hover:text-yellow-300"
+              className="mt-3 px-3 py-1.5 bg-white text-sm font-semibold text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-2"
             >
-              🔊 Listen Again
+              <span>🔊</span> Listen Again
             </button>
           </div>
         )}
@@ -272,42 +331,48 @@ function App() {
 
       {/* Execution Logs */}
       {executionLogs.length > 0 && (
-        <div className="card bg-gray-900 rounded-2xl p-4 border border-blue-600 mb-4">
-          <h2 className="text-xl font-bold text-blue-400 mb-2">📋 Execution Logs</h2>
-          <div className="space-y-1 max-h-32 overflow-y-auto">
+        <div className="card bg-white rounded-2xl p-5 shadow-sm border border-gray-200 mb-5">
+          <h2 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <span>📋</span> Execution Logs
+          </h2>
+          <div className="space-y-2 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-lg border border-gray-100 font-mono text-xs">
             {executionLogs.map((log, i) => (
-              <p key={i} className="text-sm text-gray-300">{log}</p>
+              <p key={i} className="text-gray-600 border-b border-gray-200 pb-1 last:border-0">{log}</p>
             ))}
           </div>
         </div>
       )}
 
       {/* Saved Items */}
-      <div className="card bg-gray-900 rounded-2xl p-4 border border-gray-600">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-bold text-white">💾 Saved Items</h2>
+      <div className="card bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <span>💾</span> Saved Items
+          </h2>
           {savedItems.length > 0 && (
             <button
               onClick={async () => {
                 await clearAllItems();
                 await loadItems();
               }}
-              className="text-red-400 text-sm hover:text-red-300 font-bold"
+              className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-100"
             >
               Clear All
             </button>
           )}
         </div>
         {savedItems.length === 0 ? (
-          <p className="text-gray-500 text-sm">No saved items yet.</p>
+          <div className="p-8 text-center bg-gray-50 rounded-xl border border-gray-100">
+            <p className="text-gray-400 font-medium">No saved items yet.</p>
+          </div>
         ) : (
-          <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
             {savedItems.map((item) => (
-              <div key={item.id} className="flex justify-between items-start p-3 bg-black rounded-lg border border-gray-800">
-                <div className="flex-1 mr-2">
-                  <p className="text-white text-sm break-words">{item.content}</p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    {new Date(item.timestamp).toLocaleTimeString()}
+              <div key={item.id} className="flex justify-between items-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow transition-shadow">
+                <div className="flex-1 mr-4">
+                  <p className="text-gray-800 font-medium break-words leading-snug">{item.content}</p>
+                  <p className="text-gray-400 text-xs mt-2 font-medium">
+                    {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
                 <button
@@ -315,7 +380,7 @@ function App() {
                     await deleteItem(item.id!);
                     await loadItems();
                   }}
-                  className="text-red-500 text-lg hover:text-red-400 bg-gray-800 w-8 h-8 rounded-full flex items-center justify-center"
+                  className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50 bg-gray-50 rounded-full transition-colors flex-shrink-0"
                   aria-label="Delete item"
                 >
                   ✕
@@ -327,8 +392,15 @@ function App() {
       </div>
 
       {/* Footer */}
-      <footer className="text-center text-gray-500 text-xs mt-6 pb-6">
-        Offline • WCAG Compliant • No Typing Required
+      <footer className="text-center mt-8 pb-8 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3 text-sm font-semibold text-gray-400">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Offline</span>
+          <span>•</span>
+          <span>WCAG Compliant</span>
+          <span>•</span>
+          <span>No Typing</span>
+        </div>
+        <p className="text-xs text-gray-400 mt-1">Sahayak Project - Accessible by Design</p>
       </footer>
     </div>
   );

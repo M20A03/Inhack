@@ -127,9 +127,11 @@ export function FaceTracker({ onGesture, isActive }: FaceTrackerProps) {
   if (!isActive) return null;
 
   return (
-    <div className="flex flex-col items-center p-4 bg-gray-900 rounded-2xl border border-blue-500">
-      <h3 className="text-white font-bold mb-2">👤 Face Tracker Active</h3>
-      <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-yellow-400">
+    <div className="flex flex-col items-center p-5 bg-white shadow-sm rounded-2xl border border-gray-200">
+      <h3 className="text-gray-800 font-bold mb-3 flex items-center gap-2">
+        <span>👤</span> Face Tracker Active
+      </h3>
+      <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-blue-500 shadow-md">
         <video 
           ref={videoRef}
           autoPlay 
@@ -137,11 +139,11 @@ export function FaceTracker({ onGesture, isActive }: FaceTrackerProps) {
           className="w-full h-full object-cover transform -scale-x-100"
         ></video>
       </div>
-      <p className="mt-3 text-sm text-gray-300">{status}</p>
-      <div className="mt-2 text-xs text-gray-400 text-center">
-        <p>👄 Open Mouth = Click</p>
-        <p>😉 Left Wink = Go Back</p>
-        <p>😉 Right Wink = Go Home</p>
+      <p className="mt-4 text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">{status}</p>
+      <div className="mt-4 text-xs font-medium text-gray-500 text-center space-y-1 bg-gray-50 p-3 rounded-xl border border-gray-100 w-full">
+        <p>👄 <span className="text-gray-700">Open Mouth</span> = Click</p>
+        <p>😉 <span className="text-gray-700">Left Wink</span> = Go Back</p>
+        <p>😉 <span className="text-gray-700">Right Wink</span> = Go Home</p>
       </div>
     </div>
   );

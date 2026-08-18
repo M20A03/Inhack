@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #000000;
-  --color-text: #FFD700;
+  --color-bg: #f9fafb;
+  --color-text: #111827;
   --color-accent: #FFD700;
   --color-accent-fg: #000000;
   --touch-target: 60px;
