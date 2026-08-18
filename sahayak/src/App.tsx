@@ -117,41 +117,41 @@ function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-yellow-400">
+      <div className="min-h-screen flex items-center justify-center bg-deep-forest text-primary font-serif">
         <p className="text-xl font-bold animate-pulse">Loading Sahayak...</p>
       </div>
     );
   }
 
   return (
-    <div className="app-container min-h-screen bg-black text-yellow-400 p-4 font-sans max-w-4xl mx-auto flex flex-col gap-6">
+    <div className="app-container min-h-screen bg-deep-forest text-on-surface p-4 font-sans max-w-4xl mx-auto flex flex-col gap-6 antialiased">
       {/* Header with Profile Section */}
-      <header className="flex justify-between items-center border-b border-yellow-500/20 pb-4">
+      <header className="flex justify-between items-center border-b border-outline-variant/35 pb-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2 font-serif text-primary">
             <span className="text-4xl">🤝</span> Sahayak
           </h1>
-          <p className="text-yellow-300 text-sm font-medium mt-1">Hands-Free Accessibility Engine</p>
+          <p className="text-accent-gold text-xs font-bold tracking-widest uppercase mt-1">Hands-Free Accessibility Engine</p>
         </div>
         
         {/* Profile Card / Login Button */}
         <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3 bg-zinc-900 border border-yellow-500/30 p-2 rounded-2xl">
+            <div className="flex items-center gap-3 bg-surface-dark border border-outline-variant/35 p-2 rounded-2xl">
               {user.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-10 h-10 rounded-full border border-yellow-400" />
+                <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-10 h-10 rounded-full border border-primary/40" />
               ) : (
-                <div className="w-10 h-10 bg-yellow-400/20 rounded-full flex items-center justify-center border border-yellow-500">
-                  <UserIcon className="text-yellow-400" size={20} />
+                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                  <UserIcon className="text-primary" size={20} />
                 </div>
               )}
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-yellow-400 truncate max-w-[120px]">{user.displayName || 'User'}</p>
-                <p className="text-[10px] text-yellow-600 truncate max-w-[120px]">{user.email}</p>
+                <p className="text-xs font-bold text-primary truncate max-w-[120px]">{user.displayName || 'User'}</p>
+                <p className="text-[10px] text-on-surface-variant truncate max-w-[120px]">{user.email}</p>
               </div>
               <button 
                 onClick={() => signOut(auth)}
-                className="p-2 bg-zinc-950 text-red-500 hover:text-red-400 rounded-xl border border-yellow-500/10"
+                className="p-2 bg-deep-forest text-red-500 hover:text-red-400 rounded-xl border border-outline-variant/35"
                 aria-label="Sign Out"
               >
                 <LogOut size={18} />
@@ -160,7 +160,7 @@ function App() {
           ) : (
             <button 
               onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 bg-yellow-400 text-black rounded-xl border border-yellow-500 hover:bg-yellow-300 transition-colors text-sm font-bold shadow-md"
+              className="flex items-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl border border-outline-variant hover:bg-secondary hover:text-on-secondary transition-colors text-sm font-bold shadow-md"
             >
               <LogIn className="w-5 h-5" />
               Sign In
@@ -175,7 +175,7 @@ function App() {
           <div className="relative w-full max-w-md">
             <button 
               onClick={() => setIsAuthOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-300"
+              className="absolute top-4 right-4 z-10 p-2 text-primary hover:text-secondary"
             >
               <X size={24} />
             </button>
@@ -249,8 +249,8 @@ function App() {
       <InstallButton />
 
       {/* Footer */}
-      <footer className="text-center mt-8 pb-8 flex flex-col items-center gap-2 border-t border-yellow-500/20 pt-4">
-        <div className="flex items-center gap-3 text-sm font-bold text-yellow-500/60">
+      <footer className="text-center mt-8 pb-8 flex flex-col items-center gap-2 border-t border-outline-variant/35 pt-4">
+        <div className="flex items-center gap-3 text-sm font-bold text-on-surface-variant/70">
           <span className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> Offline Mode
           </span>
@@ -259,7 +259,7 @@ function App() {
           <span>•</span>
           <span>Zero Touch</span>
         </div>
-        <p className="text-xs text-yellow-600 font-medium">Sahayak Project • Accessible by Design</p>
+        <p className="text-xs text-accent-gold font-bold uppercase tracking-wider">Sahayak Project • Accessible by Design</p>
       </footer>
     </div>
   );
