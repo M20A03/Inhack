@@ -1,7 +1,5 @@
-// ModeSelector component
-import { Mic, ToggleRight, ScanFace, Eye, Combine } from 'lucide-react';
-
 export type ControlMode = 'voice' | 'switch' | 'face' | 'eye' | 'hybrid';
+import { Mic, ToggleRight, ScanFace, Eye, Combine } from 'lucide-react';
 
 interface ModeSelectorProps {
   currentMode: ControlMode;
@@ -18,15 +16,15 @@ const modes = [
 
 export function ModeSelector({ currentMode, onModeChange }: ModeSelectorProps) {
   return (
-    <div className="flex flex-wrap gap-2 mb-6" role="group" aria-label="Control Modes">
+    <div className="flex flex-wrap gap-3 mb-6" role="group" aria-label="Control Modes">
       {modes.map((mode) => (
         <button
           key={mode.id}
           onClick={() => onModeChange(mode.id as ControlMode)}
-          className={`flex-1 flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-colors min-w-[70px] ${
+          className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all min-w-[80px] ${
             currentMode === mode.id
-              ? 'border-accent bg-accent/20 text-accent'
-              : 'border-gray-700 hover:border-gray-500 text-gray-400'
+              ? 'border-yellow-500 bg-yellow-400 text-black font-bold scale-105 shadow-md'
+              : 'border-yellow-500/20 bg-zinc-950 text-yellow-500/60 hover:border-yellow-500/70 hover:text-yellow-400'
           }`}
           aria-pressed={currentMode === mode.id}
           aria-label={`${mode.label} Control Mode`}

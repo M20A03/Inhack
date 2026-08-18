@@ -78,12 +78,12 @@ export function OCRComponent({ onTextExtracted, speakText }: OCRComponentProps) 
       />
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="btn btn-yellow w-full text-2xl py-6 rounded-2xl"
+        className="w-full text-2xl py-6 rounded-2xl bg-yellow-400 text-black font-bold border-2 border-yellow-500 hover:bg-yellow-300 transition-colors"
         disabled={isLoading}
       >
         {isLoading ? '⏳ Scanning...' : '📸 Open Camera'}
       </button>
-      <p className="text-sm text-gray-400 mt-2 text-center">{status}</p>
+      <p className="text-sm text-yellow-500 mt-2 text-center font-semibold">{status}</p>
     </div>
   );
 }

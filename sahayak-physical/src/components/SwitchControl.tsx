@@ -47,32 +47,32 @@ export function SwitchControl({ isActive, onCommand }: SwitchControlProps) {
   if (!isActive) return null;
 
   return (
-    <div className="flex flex-col gap-4 w-full bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
+    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-gray-800">
-          <ToggleRight className="text-blue-600" />
+        <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-400">
+          <ToggleRight className="text-yellow-400" />
           Switch Control
         </h2>
-        <div className="flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-50 px-2 py-1 rounded-full border border-gray-100">
-          <Bluetooth size={14} className={isScanning ? 'text-blue-500' : 'text-gray-400'} />
+        <div className="flex items-center gap-1 text-xs font-semibold text-yellow-400 bg-zinc-900 px-2 py-1 rounded-full border border-yellow-500/30">
+          <Bluetooth size={14} className={isScanning ? 'text-yellow-400' : 'text-zinc-600'} />
           {isScanning ? 'Connected' : 'Disconnected'}
         </div>
       </div>
 
-      <p className="text-sm text-gray-500 font-medium">
-        Press <kbd className="bg-gray-100 border border-gray-200 px-1 rounded text-gray-700">Space</kbd> or <kbd className="bg-gray-100 border border-gray-200 px-1 rounded text-gray-700">Enter</kbd> (or external Bluetooth switch) to select the highlighted action.
+      <p className="text-sm text-yellow-300 font-medium">
+        Press <kbd className="bg-zinc-900 border border-yellow-500/50 px-1 rounded text-yellow-400">Space</kbd> or <kbd className="bg-zinc-900 border border-yellow-500/50 px-1 rounded text-yellow-400">Enter</kbd> (or external Bluetooth switch) to select the highlighted action.
       </p>
 
       {/* Real Commands Area showing Scanning */}
-      <div className="w-full bg-gray-50 rounded-xl border border-gray-200 p-4 mt-2 mb-2 shadow-inner">
+      <div className="w-full bg-zinc-900 rounded-xl border border-yellow-500/30 p-4 mt-2 mb-2 shadow-inner">
         <div className="grid grid-cols-2 gap-3">
           {COMMANDS.map(item => (
             <div 
               key={item.id}
               className={`p-4 rounded-xl flex items-center justify-center text-sm font-bold transition-all border-2 ${
                 isScanning && activeItem === item.id 
-                  ? 'bg-blue-100 text-blue-700 border-blue-500 scale-105 shadow-md ring-2 ring-blue-300 ring-offset-1' 
-                  : 'bg-white border-gray-200 text-gray-600'
+                  ? 'bg-yellow-400 text-black border-yellow-500 scale-105 shadow-md ring-2 ring-yellow-300 ring-offset-1' 
+                  : 'bg-black border-yellow-500/50 text-yellow-400/70'
               }`}
             >
               {item.label}
@@ -81,14 +81,14 @@ export function SwitchControl({ isActive, onCommand }: SwitchControlProps) {
         </div>
       </div>
 
-      <div className="bg-gray-50 p-4 rounded-xl flex flex-col gap-3 border border-gray-200 text-sm mt-2">
-        <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-          <span className="text-gray-500 font-medium">Scan Speed</span>
-          <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">1.5s</span>
+      <div className="bg-zinc-900 p-4 rounded-xl flex flex-col gap-3 border border-yellow-500/30 text-sm mt-2">
+        <div className="flex justify-between items-center border-b border-yellow-500/20 pb-2">
+          <span className="text-yellow-500 font-medium">Scan Speed</span>
+          <span className="font-bold text-black bg-yellow-400 px-2 py-0.5 rounded">1.5s</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-gray-500 font-medium">Switch Input</span>
-          <span className="font-bold text-gray-700">Space / Enter</span>
+          <span className="text-yellow-500 font-medium">Switch Input</span>
+          <span className="font-bold text-yellow-300">Space / Enter</span>
         </div>
       </div>
 
@@ -96,8 +96,8 @@ export function SwitchControl({ isActive, onCommand }: SwitchControlProps) {
         onClick={() => setIsScanning(!isScanning)}
         className={`w-full py-4 mt-4 rounded-xl font-bold text-lg shadow-sm transition-all border ${
           isScanning 
-            ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
-            : 'bg-blue-600 text-white border-blue-700 hover:bg-blue-700'
+            ? 'bg-zinc-900 text-red-500 border-red-500 hover:bg-zinc-800'
+            : 'bg-yellow-400 text-black border-yellow-500 hover:bg-yellow-300'
         }`}
       >
         {isScanning ? 'Stop Scanning' : 'Start Scanning'}

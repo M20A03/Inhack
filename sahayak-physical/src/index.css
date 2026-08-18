@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f9fafb;
-  --color-text: #111827;
-  --color-accent: #FFD700;
+  --color-bg: #000000;
+  --color-text: #FFFF00;
+  --color-accent: #FFFF00;
   --color-accent-fg: #000000;
   --touch-target: 60px;
   --font-size-base: 18px;
   --font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* Base Body Styles */
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -20,41 +21,52 @@ body {
   transition: all 0.3s ease;
 }
 
-/* Base styling for high contrast */
-button {
+/* WCAG 60px+ targets */
+button, input, select, textarea {
   min-height: var(--touch-target);
   font-size: inherit;
   font-family: inherit;
 }
 
-button:focus-visible {
-  outline: 4px solid #FFD700;
-  outline-offset: 4px;
+/* Accessible focus state */
+*:focus-visible {
+  outline: 4px solid #FFFF00 !important;
+  outline-offset: 4px !important;
 }
 
+/* Mode overrides */
+body.mode-visual {
+  --font-size-base: 24px;
+}
+
+body.mode-motor {
+  --touch-target: 76px;
+}
+
+body.mode-cognitive .cognitive-hide {
+  display: none !important;
+}
+
+/* Accessibility scanning styles */
+.item-scanning {
+  outline: 6px solid #FFFF00 !important;
+  outline-offset: 4px;
+  animation: pulse-scan 1s infinite alternate;
+}
+
+@keyframes pulse-scan {
+  0% { transform: scale(1.02); }
+  100% { transform: scale(0.98); }
+}
+
+/* Flashing border for hearing mode alerts */
 .flashing-border {
   animation: flash 1s infinite alternate;
 }
 
 @keyframes flash {
   0% { border-color: transparent; }
-  100% { border-color: #FFD700; }
-}
-
-.glass-panel {
-  background: rgba(30, 30, 30, 0.8);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.item-scanning {
-  animation: scan-highlight 1.5s infinite;
-}
-
-@keyframes scan-highlight {
-  0% { box-shadow: 0 0 0 0px rgba(255, 215, 0, 0); }
-  50% { box-shadow: 0 0 0 4px rgba(255, 215, 0, 1); }
-  100% { box-shadow: 0 0 0 0px rgba(255, 215, 0, 0); }
+  100% { border-color: #FFFF00; }
 }
 
 @media (prefers-reduced-motion: reduce) {
