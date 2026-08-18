@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, LogIn, User as UserIcon, X } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 // Firebase
@@ -26,11 +26,13 @@ import { speakText } from './hooks/useSpeechRecognition';
 
 // Utils
 import { AIResponse as LocalAIResponse } from './utils/localAI';
+import { executeDeepLink } from './utils/deepLinks';
 
 function App() {
   const [currentMode, setCurrentMode] = useState<ControlMode>('voice');
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   
   // History refresh trigger
   const [refreshHistory, setRefreshHistory] = useState(0);
@@ -45,6 +47,9 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
+      if (currentUser) {
+        setIsAuthOpen(false); // Close modal on success
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -75,6 +80,11 @@ function App() {
     // Auto read response
     if (result && result.response) {
       speakText(result.response);
+    }
+
+    // Execute deep link trigger (actually open apps / maps / call dialer on the phone)
+    if (result && result.command) {
+      executeDeepLink(result.type, result.command.target, result.command.text || result.command.contact);
     }
   };
 
@@ -113,13 +123,9 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <AuthComponent />;
-  }
-
   return (
     <div className="app-container min-h-screen bg-black text-yellow-400 p-4 font-sans max-w-4xl mx-auto flex flex-col gap-6">
-      {/* Header */}
+      {/* Header with Profile Section */}
       <header className="flex justify-between items-center border-b border-yellow-500/20 pb-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
@@ -127,14 +133,56 @@ function App() {
           </h1>
           <p className="text-yellow-300 text-sm font-medium mt-1">Hands-Free Accessibility Engine</p>
         </div>
-        <button 
-          onClick={() => signOut(auth)}
-          className="flex items-center gap-2 px-4 py-3 bg-zinc-950 text-yellow-400 rounded-xl border border-yellow-500/30 hover:bg-zinc-900 transition-colors text-sm font-bold"
-        >
-          <LogOut className="w-5 h-5" />
-          Sign Out
-        </button>
+        
+        {/* Profile Card / Login Button */}
+        <div className="flex items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-3 bg-zinc-900 border border-yellow-500/30 p-2 rounded-2xl">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-10 h-10 rounded-full border border-yellow-400" />
+              ) : (
+                <div className="w-10 h-10 bg-yellow-400/20 rounded-full flex items-center justify-center border border-yellow-500">
+                  <UserIcon className="text-yellow-400" size={20} />
+                </div>
+              )}
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-bold text-yellow-400 truncate max-w-[120px]">{user.displayName || 'User'}</p>
+                <p className="text-[10px] text-yellow-600 truncate max-w-[120px]">{user.email}</p>
+              </div>
+              <button 
+                onClick={() => signOut(auth)}
+                className="p-2 bg-zinc-950 text-red-500 hover:text-red-400 rounded-xl border border-yellow-500/10"
+                aria-label="Sign Out"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsAuthOpen(true)}
+              className="flex items-center gap-2 px-4 py-3 bg-yellow-400 text-black rounded-xl border border-yellow-500 hover:bg-yellow-300 transition-colors text-sm font-bold shadow-md"
+            >
+              <LogIn className="w-5 h-5" />
+              Sign In
+            </button>
+          )}
+        </div>
       </header>
+
+      {/* Auth Modal Overlay */}
+      {isAuthOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative w-full max-w-md">
+            <button 
+              onClick={() => setIsAuthOpen(false)}
+              className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-300"
+            >
+              <X size={24} />
+            </button>
+            <AuthComponent />
+          </div>
+        </div>
+      )}
 
       {/* Control Mode Selection */}
       <ModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
@@ -190,7 +238,7 @@ function App() {
           <SpotifyControls />
 
           {/* Q&A Help Desk */}
-          <HelpDesk />
+          <HelpDesk user={user} onSignIn={() => setIsAuthOpen(true)} />
           
           {/* Saved History */}
           <SavedItems refreshTrigger={refreshHistory} />

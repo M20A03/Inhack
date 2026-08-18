@@ -1,54 +1,35 @@
-import React from 'react';
-import { Volume2, Save } from 'lucide-react';
+import { Volume2 } from 'lucide-react';
 import { speakText } from '../hooks/useSpeechRecognition';
-import { saveItem } from '../utils/storage';
-import { AppMode } from './ModeSelector';
 
 interface AIResponseProps {
-  response: string;
-  currentMode: AppMode;
-  onSave?: () => void;
+  message?: string;
+  action?: string;
 }
 
-export function AIResponse({ response, currentMode, onSave }: AIResponseProps) {
-  if (!response) return null;
-
-  const handleSpeak = () => speakText(response);
-  const handleSave = async () => {
-    await saveItem(response, 'response');
-    if (onSave) onSave();
-    if (currentMode === 'visual' || currentMode === 'general') {
-      speakText('Response saved.');
-    }
-  };
+export function AIResponse({ message, action }: AIResponseProps) {
+  if (!message) return null;
 
   return (
-    <div className="bg-gray-900 rounded-xl p-4 border border-gray-700 mt-6 shadow-md" role="region" aria-label="AI Response">
-      <h3 className="text-lg font-bold mb-2 text-accent">Assistant</h3>
-      <div className="text-gray-200 whitespace-pre-wrap mb-4">
-        {response}
-      </div>
-      
-      <div className="flex gap-2 cognitive-hide">
-        {currentMode !== 'hearing' && (
-          <button
-            onClick={handleSpeak}
-            className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-            aria-label="Read response aloud"
-          >
-            <Volume2 size={20} />
-            Read
-          </button>
+    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold text-yellow-400">🤖 Sahayak AI Response</h2>
+        {action && (
+          <span className="text-xs bg-yellow-400/20 text-yellow-400 px-3 py-1 rounded-full font-bold uppercase font-mono">
+            {action}
+          </span>
         )}
-        <button
-          onClick={handleSave}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-          aria-label="Save response"
-        >
-          <Save size={20} />
-          Save
-        </button>
       </div>
+
+      <p className="text-lg text-yellow-300 font-semibold leading-relaxed">
+        {message}
+      </p>
+
+      <button
+        onClick={() => speakText(message)}
+        className="w-full py-4 mt-2 bg-yellow-400 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-300 transition-colors"
+      >
+        <Volume2 size={20} /> Speak Response
+      </button>
     </div>
   );
 }

@@ -1,11 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  // Use any to bypass strict TS checking for vendor prefixed APIs
   const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
   const startListening = useCallback(() => {
@@ -47,7 +46,12 @@ export function useSpeechRecognition() {
 
 export function speakText(text: string) {
   if ('speechSynthesis' in window) {
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    
     const utterance = new SpeechSynthesisUtterance(text);
+    // Adjust speech rate for clarity
+    utterance.rate = 0.9; 
     window.speechSynthesis.speak(utterance);
   }
 }

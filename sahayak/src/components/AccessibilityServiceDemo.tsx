@@ -1,36 +1,110 @@
-import React, { useState } from 'react';
-import { ShieldAlert, CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Smartphone, ShieldAlert, CheckCircle, Terminal, Loader } from 'lucide-react';
+import { mockAccessibilityServiceStatus, toggleAccessibilityService } from '../utils/accessibility';
+import { AIResponse } from '../utils/localAI';
+import { saveItem } from '../utils/storage';
 
-export function AccessibilityServiceDemo() {
-  const [isEnabled, setIsEnabled] = useState(false);
+interface AccessibilityServiceDemoProps {
+  latestCommand?: AIResponse | null;
+  onLogSave?: () => void;
+}
+
+export function AccessibilityServiceDemo({ latestCommand, onLogSave }: AccessibilityServiceDemoProps) {
+  const [isEnabled, setIsEnabled] = useState(mockAccessibilityServiceStatus());
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isExecuting, setIsExecuting] = useState(false);
+
+  const handleToggle = () => {
+    const newState = !isEnabled;
+    setIsEnabled(newState);
+    toggleAccessibilityService(newState);
+    if (newState) {
+      setLogs(['Service bound to com.sahayak.AccessibilityService', 'Waiting for commands...']);
+    } else {
+      setLogs([]);
+    }
+  };
+
+  useEffect(() => {
+    if (latestCommand && isEnabled && latestCommand.logs && latestCommand.logs.length > 0) {
+      executeSimulatedLogs(latestCommand.logs);
+    }
+  }, [latestCommand, isEnabled]);
+
+  const executeSimulatedLogs = async (commandLogs: string[]) => {
+    setIsExecuting(true);
+    setLogs([]); // Clear previous specific execution
+    
+    for (let i = 0; i < commandLogs.length; i++) {
+      setLogs(prev => [...prev, `> ${commandLogs[i]}`]);
+      // Simulate delay between accessibility node traversals/actions
+      await new Promise(r => setTimeout(r, 600)); 
+    }
+    
+    setLogs(prev => [...prev, '> ✅ Execution Complete.']);
+    setIsExecuting(false);
+    
+    // Save to offline storage automatically
+    if (latestCommand?.response) {
+      await saveItem({
+        type: 'command',
+        content: `Executed: "${latestCommand.command.text || ''}" -> "${latestCommand.response}"`,
+        timestamp: Date.now()
+      });
+      if (onLogSave) onLogSave();
+    }
+  };
 
   return (
-    <div className="mt-8 p-4 bg-blue-900/30 border border-blue-800 rounded-xl cognitive-hide">
-      <div className="flex items-start gap-3">
-        <ShieldAlert className="text-blue-400 mt-1 shrink-0" size={24} />
-        <div>
-          <h3 className="font-bold text-lg mb-2">Universal App Control</h3>
-          <p className="text-sm text-gray-300 mb-4">
-            (Conceptual Demo) Activating the Android Accessibility Service allows Sahayak to read screens from other apps and simulate touches for motor-impaired users.
+    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6 mt-4">
+      <div className="flex items-start gap-4">
+        <div className="relative">
+          <Smartphone className={isEnabled ? "text-yellow-400" : "text-zinc-600"} size={40} />
+          <ShieldAlert className="absolute -bottom-2 -right-2 text-yellow-400" size={20} />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-xl font-bold flex items-center justify-between text-yellow-400">
+            Universal App Control
+            {isEnabled && <span className="flex h-3 w-3 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-400"></span></span>}
+          </h2>
+          <p className="text-sm text-yellow-300 mt-1 leading-snug">
+            Grants Sahayak permission to read screens and simulate touches inside <b>ANY</b> installed app hands-free.
           </p>
-          
-          <button
-            onClick={() => setIsEnabled(!isEnabled)}
-            className={`w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors ${
-              isEnabled ? 'bg-blue-600 text-white' : 'bg-gray-800 text-white'
-            }`}
-          >
-            {isEnabled ? (
-              <>
-                <CheckCircle size={20} />
-                Service Enabled
-              </>
-            ) : (
-              'Enable Accessibility Service'
-            )}
-          </button>
         </div>
       </div>
+
+      <button
+        onClick={handleToggle}
+        className={`w-full py-4 rounded-xl font-bold text-lg transition-colors flex items-center justify-center gap-2 ${
+          isEnabled ? 'bg-zinc-900 text-yellow-400 border border-yellow-500' : 'bg-yellow-400 text-black hover:bg-yellow-300'
+        }`}
+      >
+        {isEnabled ? (
+          <>
+            <CheckCircle size={20} />
+            Accessibility Service Active
+          </>
+        ) : (
+          'Enable Android Service (Mock)'
+        )}
+      </button>
+
+      {isEnabled && (
+        <div className="mt-2 bg-zinc-950 border border-yellow-500/30 rounded-lg p-3 font-mono text-xs text-yellow-400 overflow-hidden relative">
+           <div className="flex items-center gap-2 text-yellow-600 mb-2 border-b border-yellow-500/20 pb-2">
+             <Terminal size={14} />
+             <span>Accessibility Node Dispatcher</span>
+             {isExecuting && <Loader size={14} className="ml-auto text-yellow-400 animate-spin" />}
+           </div>
+           
+           <div className="flex flex-col gap-1 min-h-[100px] max-h-[200px] overflow-y-auto pb-4">
+              {logs.length === 0 && <span className="text-yellow-600">Awaiting commands... Say something like "Open WhatsApp".</span>}
+              {logs.map((log, i) => (
+                <div key={i} className="animate-fade-in">{log}</div>
+              ))}
+           </div>
+        </div>
+      )}
     </div>
   );
 }

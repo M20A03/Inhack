@@ -1,101 +1,124 @@
-import React, { useEffect, useState } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Music } from 'lucide-react';
-import { loginWithSpotify, initializeSpotifyFromStorage, getSpotifyApi } from '../utils/spotify';
+import { useState, useEffect } from 'react';
+import { Music, Play, Pause, SkipForward, LogIn, RefreshCw } from 'lucide-react';
+import { spotify, getSpotifyAuthUrl, SpotifyTrack } from '../utils/spotify';
 
 export function SpotifyControls() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState<any>(null);
+  const [track, setTrack] = useState<SpotifyTrack | null>(null);
+  const [loading, setLoading] = useState(false);
 
+  // Parse token from hash fragment on callback
   useEffect(() => {
-    const token = initializeSpotifyFromStorage();
-    if (token) {
-      setIsAuthenticated(true);
-      fetchCurrentTrack();
+    const hash = window.location.hash;
+    if (hash) {
+      const token = new URLSearchParams(hash.substring(1)).get('access_token');
+      if (token) {
+        spotify.setToken(token);
+        setIsAuthenticated(true);
+        window.location.hash = ''; // clear hash
+      }
+    } else {
+      setIsAuthenticated(spotify.isAuthenticated());
     }
   }, []);
 
   const fetchCurrentTrack = async () => {
-    try {
-      const api = getSpotifyApi();
-      const state = await api.getMyCurrentPlaybackState();
-      if (state && state.item) {
-        setCurrentTrack(state.item);
-      }
-    } catch (e) {
-      console.error('Error fetching track', e);
-    }
+    if (!isAuthenticated) return;
+    setLoading(true);
+    const data = await spotify.getCurrentlyPlaying();
+    setTrack(data);
+    setLoading(false);
   };
 
-  const handlePlayPause = async () => {
-    try {
-      const api = getSpotifyApi();
-      const state = await api.getMyCurrentPlaybackState();
-      if (state && state.is_playing) {
-        await api.pause();
-      } else {
-        await api.play();
-      }
-      setTimeout(fetchCurrentTrack, 500);
-    } catch (e) {
-      console.error(e);
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCurrentTrack();
+      const interval = setInterval(fetchCurrentTrack, 10000); // Poll every 10s
+      return () => clearInterval(interval);
     }
+  }, [isAuthenticated]);
+
+  const handleLogin = () => {
+    window.location.href = getSpotifyAuthUrl();
+  };
+
+  const handlePlay = async () => {
+    await spotify.play();
+    fetchCurrentTrack();
+  };
+
+  const handlePause = async () => {
+    await spotify.pause();
+    fetchCurrentTrack();
   };
 
   const handleNext = async () => {
-    try {
-      await getSpotifyApi().skipToNext();
-      setTimeout(fetchCurrentTrack, 500);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handlePrevious = async () => {
-    try {
-      await getSpotifyApi().skipToPrevious();
-      setTimeout(fetchCurrentTrack, 500);
-    } catch (e) {
-      console.error(e);
-    }
+    await spotify.next();
+    fetchCurrentTrack();
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="mt-8 p-4 bg-gray-900 rounded-xl border border-gray-700 cognitive-hide">
-        <div className="flex items-center gap-3 mb-4">
-          <Music className="text-green-500" size={24} />
-          <h3 className="font-bold text-lg">Spotify Integration</h3>
-        </div>
+      <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-400">
+          <Music /> Spotify Controls
+        </h2>
+        <p className="text-sm text-yellow-300">
+          Connect your Spotify Premium account to control music hands-free with voice or switch control.
+        </p>
         <button
-          onClick={loginWithSpotify}
-          className="w-full py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold"
+          onClick={handleLogin}
+          className="w-full py-4 mt-2 bg-yellow-400 text-black font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-yellow-300"
         >
-          Connect to Spotify
+          <LogIn size={20} /> Login to Spotify
         </button>
       </div>
     );
   }
 
   return (
-    <div className="mt-8 p-4 bg-gray-900 rounded-xl border border-gray-700 cognitive-hide" role="region" aria-label="Spotify Player">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Music className="text-green-500" size={24} />
-          <span className="font-bold truncate max-w-[200px]">
-            {currentTrack ? `${currentTrack.name} - ${currentTrack.artists[0]?.name}` : 'Not playing'}
-          </span>
-        </div>
+    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-400">
+          <Music /> Spotify Active
+        </h2>
+        <button onClick={fetchCurrentTrack} className="p-2 text-yellow-400">
+          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+        </button>
       </div>
-      
-      <div className="flex justify-center items-center gap-6">
-        <button onClick={handlePrevious} className="p-3 bg-gray-800 rounded-full hover:bg-gray-700" aria-label="Previous track">
-          <SkipBack size={24} />
+
+      {track ? (
+        <div className="flex items-center gap-4 bg-zinc-900 p-4 rounded-xl">
+          {track.albumArt && (
+            <img src={track.albumArt} alt={track.album} className="w-16 h-16 rounded-lg object-cover" />
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-yellow-400 truncate">{track.name}</h3>
+            <p className="text-xs text-yellow-300 truncate">{track.artist}</p>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-yellow-500 text-center py-4">No track playing. Start Spotify on your device.</p>
+      )}
+
+      <div className="flex gap-4 mt-2">
+        <button
+          onClick={handlePlay}
+          className="flex-1 py-4 bg-yellow-400 text-black font-bold rounded-xl flex items-center justify-center gap-2"
+        >
+          <Play size={20} /> Play
         </button>
-        <button onClick={handlePlayPause} className="p-4 bg-green-600 text-black rounded-full hover:bg-green-500" aria-label="Play or Pause">
-          <Play size={28} className="ml-1" />
+        <button
+          onClick={handlePause}
+          className="flex-1 py-4 bg-zinc-900 border border-yellow-500 text-yellow-400 font-bold rounded-xl flex items-center justify-center gap-2"
+        >
+          <Pause size={20} /> Pause
         </button>
-        <button onClick={handleNext} className="p-3 bg-gray-800 rounded-full hover:bg-gray-700" aria-label="Next track">
-          <SkipForward size={24} />
+        <button
+          onClick={handleNext}
+          className="p-4 bg-zinc-900 border border-yellow-500 text-yellow-400 rounded-xl flex items-center justify-center"
+        >
+          <SkipForward size={20} />
         </button>
       </div>
     </div>

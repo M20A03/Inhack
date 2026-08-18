@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 
 export function InstallButton() {
@@ -31,11 +31,11 @@ export function InstallButton() {
   return (
     <button
       onClick={handleInstallClick}
-      className="fixed bottom-4 right-4 bg-accent text-accent-fg p-4 rounded-full shadow-xl flex items-center justify-center gap-2 hover:scale-105 transition-transform"
+      className="fixed bottom-6 right-6 bg-accent text-accent-fg px-6 py-4 rounded-full shadow-2xl flex items-center justify-center gap-3 hover:scale-105 transition-transform border-4 border-black font-bold z-50"
       aria-label="Install App"
     >
       <Download size={24} />
-      <span className="font-bold cognitive-hide">Install App</span>
+      <span>Install App</span>
     </button>
   );
 }

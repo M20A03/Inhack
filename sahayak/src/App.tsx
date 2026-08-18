@@ -1,108 +1,266 @@
-import React, { useState, useEffect } from 'react';
-import { ModeSelector, AppMode } from './components/ModeSelector';
+import { useState, useEffect } from 'react';
+import { LogOut, LogIn, User as UserIcon, X } from 'lucide-react';
+import { onAuthStateChanged, User } from 'firebase/auth';
+
+// Firebase
+import { auth, signOut } from './utils/firebase';
+
+// Components
+import { AuthComponent } from './components/AuthComponent';
+import { ModeSelector, ControlMode } from './components/ModeSelector';
 import { ScanComponent } from './components/ScanComponent';
+import { FaceTracker } from './components/FaceTracker';
+import { EyeTracking } from './components/EyeTracking';
+import { SwitchControl } from './components/SwitchControl';
 import { VoiceComponent } from './components/VoiceComponent';
-import { AIResponse } from './components/AIResponse';
+import { AIResponse as AIResponseView } from './components/AIResponse';
 import { SpotifyControls } from './components/SpotifyControls';
 import { AccessibilityServiceDemo } from './components/AccessibilityServiceDemo';
 import { SavedItems } from './components/SavedItems';
 import { InstallButton } from './components/InstallButton';
-import { processCommand } from './utils/localAI';
-import { saveItem } from './utils/storage';
+import { HelpDesk } from './components/HelpDesk';
+
+// Hooks
+import { useLocalAI } from './hooks/useLocalAI';
 import { speakText } from './hooks/useSpeechRecognition';
 
-function App() {
-  const [currentMode, setCurrentMode] = useState<AppMode>('general');
-  const [ocrText, setOcrText] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
-  const [refreshSavedItems, setRefreshSavedItems] = useState(0);
+// Utils
+import { AIResponse as LocalAIResponse } from './utils/localAI';
+import { executeDeepLink } from './utils/deepLinks';
 
-  // Update body class for styling based on mode
+function App() {
+  const [currentMode, setCurrentMode] = useState<ControlMode>('voice');
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  
+  // History refresh trigger
+  const [refreshHistory, setRefreshHistory] = useState(0);
+
+  // Command & AI Response State
+  const { processVoiceCommand } = useLocalAI();
+  const [latestCommand, setLatestCommand] = useState<LocalAIResponse | null>(null);
+  const [ocrText, setOcrText] = useState('');
+
+  // --- Auth Listener ---
   useEffect(() => {
-    document.body.className = `mode-${currentMode}`;
-    if (currentMode === 'visual') {
-      speakText('Visual mode activated.');
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+      if (currentUser) {
+        setIsAuthOpen(false); // Close modal on success
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // --- Dynamic Body Classes based on mode ---
+  useEffect(() => {
+    document.body.className = ''; // Reset
+    if (currentMode === 'eye') {
+      document.body.classList.add('mode-visual');
+    } else if (currentMode === 'switch') {
+      document.body.classList.add('mode-motor');
+    } else if (currentMode === 'voice') {
+      document.body.classList.add('mode-cognitive');
     }
   }, [currentMode]);
 
-  const handleModeChange = (mode: AppMode) => {
-    setCurrentMode(mode);
-  };
-
-  const handleScanComplete = (text: string) => {
+  // --- OCR Text Extracted ---
+  const handleTextExtracted = (text: string) => {
     setOcrText(text);
-    setAiResponse('');
   };
 
-  const handleVoiceCommand = (transcript: string) => {
-    const result = processCommand(transcript, ocrText);
+  // --- Process Voice / Switch / Eye Command ---
+  const handleCommand = async (transcript: string) => {
+    const result = await processVoiceCommand(transcript, ocrText);
+    setLatestCommand(result);
+    setRefreshHistory(prev => prev + 1);
     
-    // Cognitive mode limits responses to bullet points / simple structures
-    let finalResponse = result.response;
-    if (currentMode === 'cognitive' && result.type !== 'simplify') {
-      finalResponse = `• Action: ${result.type}\n• ${result.response}`;
+    // Auto read response
+    if (result && result.response) {
+      speakText(result.response);
     }
-    
-    setAiResponse(finalResponse);
 
-    if (currentMode === 'visual' || currentMode === 'general') {
-      speakText(finalResponse);
-    }
-    
-    if (currentMode === 'hearing') {
-      document.body.classList.add('flashing-border');
-      setTimeout(() => document.body.classList.remove('flashing-border'), 2000);
-      if (navigator.vibrate) navigator.vibrate(200);
+    // Execute deep link trigger (actually open apps / maps / call dialer on the phone)
+    if (result && result.command) {
+      executeDeepLink(result.type, result.command.target, result.command.text || result.command.contact);
     }
   };
 
-  const handleSaveTrigger = () => {
-    setRefreshSavedItems(prev => prev + 1);
+  // --- Face Tracker handler ---
+  const handleFaceGesture = (gesture: string) => {
+    let commandStr = '';
+    switch (gesture) {
+      case 'OPEN_MOUTH':
+        commandStr = 'scroll down';
+        break;
+      case 'BLINK_LEFT':
+        commandStr = 'go back';
+        break;
+      case 'BLINK_RIGHT':
+        commandStr = 'go home';
+        break;
+      case 'SMILE':
+        commandStr = 'click 1';
+        break;
+      case 'EYEBROWS_RAISED':
+        commandStr = 'help';
+        break;
+      default:
+        return;
+    }
+    
+    speakText(`Gesture detected: ${commandStr}`);
+    handleCommand(commandStr);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-yellow-400">
+        <p className="text-xl font-bold animate-pulse">Loading Sahayak...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen p-4 pb-24 max-w-2xl mx-auto">
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-accent focus:text-black focus:z-50 rounded">
-        Skip to main content
-      </a>
-
-      <header className="mb-8 mt-4 text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-accent">Sahayak</h1>
-        <p className="text-gray-400 mt-2 cognitive-hide">Your Adaptive Companion</p>
+    <div className="app-container min-h-screen bg-black text-yellow-400 p-4 font-sans max-w-4xl mx-auto flex flex-col gap-6">
+      {/* Header with Profile Section */}
+      <header className="flex justify-between items-center border-b border-yellow-500/20 pb-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+            <span className="text-4xl">🤝</span> Sahayak
+          </h1>
+          <p className="text-yellow-300 text-sm font-medium mt-1">Hands-Free Accessibility Engine</p>
+        </div>
+        
+        {/* Profile Card / Login Button */}
+        <div className="flex items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-3 bg-zinc-900 border border-yellow-500/30 p-2 rounded-2xl">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-10 h-10 rounded-full border border-yellow-400" />
+              ) : (
+                <div className="w-10 h-10 bg-yellow-400/20 rounded-full flex items-center justify-center border border-yellow-500">
+                  <UserIcon className="text-yellow-400" size={20} />
+                </div>
+              )}
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-bold text-yellow-400 truncate max-w-[120px]">{user.displayName || 'User'}</p>
+                <p className="text-[10px] text-yellow-600 truncate max-w-[120px]">{user.email}</p>
+              </div>
+              <button 
+                onClick={() => signOut(auth)}
+                className="p-2 bg-zinc-950 text-red-500 hover:text-red-400 rounded-xl border border-yellow-500/10"
+                aria-label="Sign Out"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsAuthOpen(true)}
+              className="flex items-center gap-2 px-4 py-3 bg-yellow-400 text-black rounded-xl border border-yellow-500 hover:bg-yellow-300 transition-colors text-sm font-bold shadow-md"
+            >
+              <LogIn className="w-5 h-5" />
+              Sign In
+            </button>
+          )}
+        </div>
       </header>
 
-      <main id="main-content">
-        <ModeSelector currentMode={currentMode} onModeChange={handleModeChange} />
-        
+      {/* Auth Modal Overlay */}
+      {isAuthOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative w-full max-w-md">
+            <button 
+              onClick={() => setIsAuthOpen(false)}
+              className="absolute top-4 right-4 z-10 p-2 text-yellow-400 hover:text-yellow-300"
+            >
+              <X size={24} />
+            </button>
+            <AuthComponent />
+          </div>
+        </div>
+      )}
+
+      {/* Control Mode Selection */}
+      <ModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
+
+      {/* Main Grid Layout */}
+      <main className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Column: Input Modes */}
         <div className="flex flex-col gap-6">
-          <ScanComponent onScanComplete={handleScanComplete} currentMode={currentMode} />
-          
-          {ocrText && (
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
-              <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Scanned Text</h3>
-              <p className="text-lg whitespace-pre-wrap">{ocrText}</p>
-            </div>
+          {/* Scan Camera Input */}
+          <ScanComponent onTextExtracted={handleTextExtracted} />
+
+          {/* Voice Command Input */}
+          {(currentMode === 'voice' || currentMode === 'hybrid') && (
+            <VoiceComponent onCommandParsed={handleCommand} />
           )}
 
-          <div className="mt-4">
-            <VoiceComponent onCommand={handleVoiceCommand} />
-          </div>
-
-          <AIResponse 
-            response={aiResponse} 
-            currentMode={currentMode} 
-            onSave={handleSaveTrigger}
+          {/* Face Tracker */}
+          <FaceTracker 
+            isActive={currentMode === 'face' || currentMode === 'hybrid'} 
+            onGesture={handleFaceGesture} 
           />
 
+          {/* Eye Tracker */}
+          <EyeTracking 
+            isActive={currentMode === 'eye' || currentMode === 'hybrid'} 
+            onCommand={handleCommand} 
+          />
+
+          {/* Switch Control */}
+          <SwitchControl 
+            isActive={currentMode === 'switch' || currentMode === 'hybrid'} 
+            onCommand={handleCommand}
+          />
+        </div>
+
+        {/* Right Column: AI Response, Music, Community, Accessibility Logs */}
+        <div className="flex flex-col gap-6">
+          {/* AI Response Box */}
+          {latestCommand && (
+            <AIResponseView 
+              message={latestCommand.response} 
+              action={latestCommand.type} 
+            />
+          )}
+
+          {/* Accessibility Service Logs */}
+          <AccessibilityServiceDemo 
+            latestCommand={latestCommand} 
+            onLogSave={() => setRefreshHistory(prev => prev + 1)} 
+          />
+
+          {/* Spotify Playback Controls */}
           <SpotifyControls />
 
-          <AccessibilityServiceDemo />
-
-          <SavedItems refreshTrigger={refreshSavedItems} />
+          {/* Q&A Help Desk */}
+          <HelpDesk user={user} onSignIn={() => setIsAuthOpen(true)} />
+          
+          {/* Saved History */}
+          <SavedItems refreshTrigger={refreshHistory} />
         </div>
       </main>
 
+      {/* PWA Floating Install Button */}
       <InstallButton />
+
+      {/* Footer */}
+      <footer className="text-center mt-8 pb-8 flex flex-col items-center gap-2 border-t border-yellow-500/20 pt-4">
+        <div className="flex items-center gap-3 text-sm font-bold text-yellow-500/60">
+          <span className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> Offline Mode
+          </span>
+          <span>•</span>
+          <span>WCAG AAA Compliant</span>
+          <span>•</span>
+          <span>Zero Touch</span>
+        </div>
+        <p className="text-xs text-yellow-600 font-medium">Sahayak Project • Accessible by Design</p>
+      </footer>
     </div>
   );
 }
