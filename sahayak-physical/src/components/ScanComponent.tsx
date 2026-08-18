@@ -20,14 +20,14 @@ export function ScanComponent({ onTextExtracted }: ScanComponentProps) {
       <OCRComponent onTextExtracted={handleTextExtracted} speakText={speakText} />
 
       {scannedText && (
-        <div className="p-5 bg-surface-dark border border-outline-variant/35 rounded-2xl flex flex-col gap-3">
-          <div className="flex items-center gap-2 text-accent-gold text-xs font-bold font-mono">
-            <FileText size={14} /> EXTRACTED TEXT
+        <div className="p-5 bg-surface-dark border border-emerald-900/30 shadow-md rounded-3xl flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-accent-gold text-xs font-bold tracking-wider uppercase">
+            <FileText size={14} /> Extracted Text
           </div>
-          <p className="text-sm text-on-surface font-semibold bg-deep-forest/40 p-3 rounded-xl border border-outline-variant/20">{scannedText}</p>
+          <p className="text-sm text-on-surface font-semibold bg-deep-forest/40 p-4 rounded-2xl border border-emerald-900/20">{scannedText}</p>
           <button
             onClick={() => speakText(scannedText)}
-            className="w-full min-h-[48px] bg-deep-forest text-primary border border-outline-variant/35 rounded-xl text-xs font-bold hover:bg-surface-dark active:scale-95 duration-150"
+            className="w-full min-h-[48px] bg-primary hover:bg-primary-container text-on-primary rounded-2xl text-xs font-bold shadow-sm transition-all"
           >
             🔊 Read Aloud
           </button>
@@ -36,3 +36,4 @@ export function ScanComponent({ onTextExtracted }: ScanComponentProps) {
     </div>
   );
 }
+

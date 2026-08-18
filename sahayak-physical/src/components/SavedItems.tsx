@@ -31,39 +31,47 @@ export function SavedItems({ refreshTrigger }: SavedItemsProps) {
     }
   };
 
-  if (items.length === 0) return null;
-
   return (
-    <div className="mt-8 bg-black border border-yellow-500 p-6 rounded-2xl">
-      <div className="flex justify-between items-center mb-4 border-b border-yellow-500/20 pb-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-400">
-           <Database className="text-yellow-400" size={24} />
+    <div className="bg-surface-dark border border-emerald-900/30 p-6 rounded-3xl shadow-lg">
+      <div className="flex justify-between items-center mb-4 border-b border-emerald-900/20 pb-3">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-primary font-display">
+           <Database className="text-primary" size={24} />
            Offline History
         </h2>
-        <button onClick={handleClearAll} className="text-red-500 p-2 hover:bg-zinc-900 rounded-lg transition-colors" aria-label="Clear all history">
-          <ArchiveX size={20} />
-        </button>
+        {items.length > 0 && (
+          <button onClick={handleClearAll} className="text-rose-400 p-2 hover:bg-rose-950/40 rounded-xl transition-colors" aria-label="Clear all history">
+            <ArchiveX size={20} />
+          </button>
+        )}
       </div>
       
-      <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-2">
-        {items.map(item => (
-          <div key={item.id} className="bg-zinc-900/50 p-4 rounded-xl flex justify-between items-start gap-4 border border-yellow-500/20">
-            <div className="flex-1">
-              <span className="text-xs text-yellow-400 uppercase font-bold tracking-wider mb-1 block">
-                {item.type.replace('_', ' ')} • {new Date(item.timestamp).toLocaleTimeString()}
-              </span>
-              <p className="text-sm text-yellow-300 font-semibold">{item.content}</p>
+      {items.length === 0 ? (
+        <div className="p-4 bg-deep-forest/40 border border-emerald-900/20 rounded-2xl text-center text-on-surface-variant text-xs font-semibold">
+          📝 No actions recorded yet. Voice commands and scanned medicine text will be logged here automatically offline.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 max-h-80 overflow-y-auto pr-1">
+          {items.map(item => (
+            <div key={item.id} className="bg-deep-forest/40 p-4 rounded-2xl flex justify-between items-start gap-4 border border-emerald-900/20">
+              <div className="flex-1">
+                <span className="text-xs text-primary uppercase font-bold tracking-wider mb-1 block">
+                  {item.type.replace('_', ' ')} • {new Date(item.timestamp).toLocaleTimeString()}
+                </span>
+                <p className="text-sm text-on-surface font-semibold">{item.content}</p>
+              </div>
+              <button
+                onClick={() => handleDelete(item.id)}
+                className="p-2.5 text-on-surface-variant hover:text-rose-400 transition-colors bg-surface-dark border border-emerald-900/30 rounded-xl shadow-xs"
+                aria-label="Delete item"
+              >
+                <Trash2 size={18} />
+              </button>
             </div>
-            <button
-              onClick={() => handleDelete(item.id)}
-              className="p-3 text-yellow-600 hover:text-red-500 transition-colors bg-black border border-yellow-500/20 rounded-lg"
-              aria-label="Delete item"
-            >
-              <Trash2 size={20} />
-            </button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
+

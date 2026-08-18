@@ -1,5 +1,5 @@
-export type ControlMode = 'voice' | 'switch' | 'face' | 'eye' | 'hybrid';
-import { Mic, ToggleRight, ScanFace, Eye, Combine } from 'lucide-react';
+export type ControlMode = 'voice' | 'face' | 'scan' | 'hybrid';
+import { Mic, ScanFace, Camera, Combine } from 'lucide-react';
 
 interface ModeSelectorProps {
   currentMode: ControlMode;
@@ -7,12 +7,13 @@ interface ModeSelectorProps {
 }
 
 const modes = [
-  { id: 'voice', label: 'Voice', icon: <Mic size={24} /> },
-  { id: 'switch', label: 'Switch', icon: <ToggleRight size={24} /> },
-  { id: 'face', label: 'Face', icon: <ScanFace size={24} /> },
-  { id: 'eye', label: 'Eye', icon: <Eye size={24} /> },
-  { id: 'hybrid', label: 'Hybrid', icon: <Combine size={24} /> },
+  { id: 'voice', label: 'Voice Control', icon: <Mic size={24} /> },
+  { id: 'face', label: 'Face Gestures', icon: <ScanFace size={24} /> },
+  { id: 'scan', label: 'Scan Medicine', icon: <Camera size={24} /> },
+  { id: 'hybrid', label: 'Hybrid (All)', icon: <Combine size={24} /> },
 ] as const;
+
+
 
 export function ModeSelector({ currentMode, onModeChange }: ModeSelectorProps) {
   return (
@@ -21,10 +22,10 @@ export function ModeSelector({ currentMode, onModeChange }: ModeSelectorProps) {
         <button
           key={mode.id}
           onClick={() => onModeChange(mode.id as ControlMode)}
-          className={`flex-1 flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all min-w-[80px] ${
+          className={`flex-1 flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 min-w-[80px] ${
             currentMode === mode.id
-              ? 'border-yellow-500 bg-yellow-400 text-black font-bold scale-105 shadow-md'
-              : 'border-yellow-500/20 bg-zinc-950 text-yellow-500/60 hover:border-yellow-500/70 hover:text-yellow-400'
+              ? 'border-secondary bg-secondary-container text-white font-bold scale-105 shadow-md'
+              : 'border-emerald-900/10 bg-surface-dark text-on-surface-variant hover:border-secondary hover:text-primary shadow-sm'
           }`}
           aria-pressed={currentMode === mode.id}
           aria-label={`${mode.label} Control Mode`}
@@ -36,3 +37,4 @@ export function ModeSelector({ currentMode, onModeChange }: ModeSelectorProps) {
     </div>
   );
 }
+

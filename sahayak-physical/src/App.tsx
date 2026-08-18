@@ -9,16 +9,11 @@ import { auth, signOut } from './utils/firebase';
 import { AuthComponent } from './components/AuthComponent';
 import { ModeSelector, ControlMode } from './components/ModeSelector';
 import { ScanComponent } from './components/ScanComponent';
-import { FaceTracker } from './components/FaceTracker';
-import { EyeTracking } from './components/EyeTracking';
-import { SwitchControl } from './components/SwitchControl';
 import { VoiceComponent } from './components/VoiceComponent';
+import { FaceTracker } from './components/FaceTracker';
 import { AIResponse as AIResponseView } from './components/AIResponse';
-import { SpotifyControls } from './components/SpotifyControls';
-import { AccessibilityServiceDemo } from './components/AccessibilityServiceDemo';
 import { SavedItems } from './components/SavedItems';
 import { InstallButton } from './components/InstallButton';
-import { HelpDesk } from './components/HelpDesk';
 
 // Hooks
 import { useLocalAI } from './hooks/useLocalAI';
@@ -27,6 +22,8 @@ import { speakText } from './hooks/useSpeechRecognition';
 // Utils
 import { AIResponse as LocalAIResponse } from './utils/localAI';
 import { executeDeepLink } from './utils/deepLinks';
+import { saveItem } from './utils/storage';
+
 
 function App() {
   const [currentMode, setCurrentMode] = useState<ControlMode>('voice');
@@ -48,7 +45,7 @@ function App() {
       setUser(currentUser);
       setAuthLoading(false);
       if (currentUser) {
-        setIsAuthOpen(false); // Close modal on success
+        setIsAuthOpen(false);
       }
     });
     return () => unsubscribe();
@@ -56,35 +53,54 @@ function App() {
 
   // --- Dynamic Body Classes based on mode ---
   useEffect(() => {
-    document.body.className = ''; // Reset
-    if (currentMode === 'eye') {
+    document.body.className = '';
+    if (currentMode === 'face') {
       document.body.classList.add('mode-visual');
-    } else if (currentMode === 'switch') {
-      document.body.classList.add('mode-motor');
     } else if (currentMode === 'voice') {
       document.body.classList.add('mode-cognitive');
+    } else if (currentMode === 'scan') {
+      document.body.classList.add('mode-visual');
+    } else if (currentMode === 'hybrid') {
+      document.body.classList.add('mode-motor');
     }
   }, [currentMode]);
 
   // --- OCR Text Extracted ---
-  const handleTextExtracted = (text: string) => {
+  const handleTextExtracted = async (text: string) => {
     setOcrText(text);
+    await saveItem({
+      type: 'scan',
+      content: `Scanned: ${text}`,
+      timestamp: Date.now()
+    });
+    setRefreshHistory(prev => prev + 1);
   };
 
-  // --- Process Voice / Switch / Eye Command ---
+  // --- Process Voice / Face Gesture Command ---
   const handleCommand = async (transcript: string) => {
     const result = await processVoiceCommand(transcript, ocrText);
     setLatestCommand(result);
-    setRefreshHistory(prev => prev + 1);
-    
-    // Auto read response
+
+    // Auto read response aloud
     if (result && result.response) {
       speakText(result.response);
+
+      // Save to IndexedDB offline history (only meaningful commands, not nav spam)
+      const skipHistoryActions = ['BACK', 'HOME', 'SCROLL_DOWN', 'SCROLL_UP', 'SWIPE_LEFT', 'SWIPE_RIGHT'];
+      if (!skipHistoryActions.includes(result.type)) {
+        await saveItem({
+          type: 'command',
+          content: `Command: "${transcript}" → ${result.response}`,
+          timestamp: Date.now()
+        });
+      }
     }
 
-    // Execute deep link trigger (actually open apps / maps / call dialer on the phone)
-    if (result && result.command) {
-      executeDeepLink(result.type, result.command.target, result.command.text || result.command.contact);
+    setRefreshHistory(prev => prev + 1);
+
+    // Execute deep link / native action for ALL command types
+    if (result && result.type) {
+      executeDeepLink(result.type, result.command?.target, result.command?.text || result.command?.contact);
     }
   };
 
@@ -111,47 +127,50 @@ function App() {
         return;
     }
     
-    speakText(`Gesture detected: ${commandStr}`);
+    speakText(`Gesture: ${commandStr}`);
     handleCommand(commandStr);
   };
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-deep-forest text-primary font-serif">
+      <div className="min-h-screen flex items-center justify-center bg-deep-forest text-primary font-body">
         <p className="text-xl font-bold animate-pulse">Loading Sahayak...</p>
       </div>
     );
   }
 
   return (
-    <div className="app-container min-h-screen bg-deep-forest text-on-surface p-4 font-sans max-w-4xl mx-auto flex flex-col gap-6 antialiased">
-      {/* Header with Profile Section */}
-      <header className="flex justify-between items-center border-b border-outline-variant/35 pb-4">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2 font-serif text-primary">
-            <span className="text-4xl">🤝</span> Sahayak
-          </h1>
-          <p className="text-accent-gold text-xs font-bold tracking-widest uppercase mt-1">Hands-Free Accessibility Engine</p>
+    <div className="app-container min-h-screen bg-deep-forest text-on-surface p-4 font-body max-w-4xl mx-auto flex flex-col gap-6 antialiased page-transition">
+      {/* Header */}
+      <header className="flex justify-between items-center bg-surface-dark border border-emerald-900/30 p-4 rounded-3xl shadow-md">
+        <div className="flex items-center gap-3">
+          <img src="/logo.jpg" alt="Sahayak Logo" className="w-12 h-12 rounded-2xl object-cover shadow-md border border-primary/20" />
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-primary font-display flex items-center gap-1.5">
+              sahayak
+            </h1>
+            <p className="text-accent-gold text-[10px] font-bold tracking-widest uppercase mt-0.5">ALWAYS HERE TO HELP</p>
+          </div>
         </div>
-        
-        {/* Profile Card / Login Button */}
+
+        {/* Profile / Login */}
         <div className="flex items-center gap-3">
           {user ? (
-            <div className="flex items-center gap-3 bg-surface-dark border border-outline-variant/35 p-2 rounded-2xl">
+            <div className="flex items-center gap-3 bg-deep-forest/40 border border-emerald-900/30 p-2 rounded-2xl">
               {user.photoURL ? (
                 <img src={user.photoURL} alt={user.displayName || 'Profile'} className="w-10 h-10 rounded-full border border-primary/40" />
               ) : (
-                <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center border border-primary/30">
+                <div className="w-10 h-10 bg-surface-dark rounded-full flex items-center justify-center border border-emerald-900/30">
                   <UserIcon className="text-primary" size={20} />
                 </div>
               )}
               <div className="hidden sm:block text-left">
-                <p className="text-xs font-bold text-primary truncate max-w-[120px]">{user.displayName || 'User'}</p>
+                <p className="text-xs font-bold text-on-surface truncate max-w-[120px]">{user.displayName || 'User'}</p>
                 <p className="text-[10px] text-on-surface-variant truncate max-w-[120px]">{user.email}</p>
               </div>
               <button 
                 onClick={() => signOut(auth)}
-                className="p-2 bg-deep-forest text-red-500 hover:text-red-400 rounded-xl border border-outline-variant/35"
+                className="p-2 bg-surface-dark text-rose-400 hover:text-rose-300 rounded-xl border border-emerald-900/30 shadow-xs"
                 aria-label="Sign Out"
               >
                 <LogOut size={18} />
@@ -160,7 +179,7 @@ function App() {
           ) : (
             <button 
               onClick={() => setIsAuthOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl border border-outline-variant hover:bg-secondary hover:text-on-secondary transition-colors text-sm font-bold shadow-md"
+              className="flex items-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-2xl border border-primary hover:bg-primary-container transition-colors text-sm font-bold shadow-md"
             >
               <LogIn className="w-5 h-5" />
               Sign In
@@ -169,13 +188,13 @@ function App() {
         </div>
       </header>
 
-      {/* Auth Modal Overlay */}
+      {/* Auth Modal */}
       {isAuthOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative w-full max-w-md">
+        <div className="fixed inset-0 z-50 bg-deep-forest/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="relative w-full max-w-md bg-surface-dark p-6 rounded-3xl border border-emerald-900/30">
             <button 
               onClick={() => setIsAuthOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 text-primary hover:text-secondary"
+              className="absolute top-4 right-4 z-10 p-2 text-on-surface-variant hover:text-on-surface"
             >
               <X size={24} />
             </button>
@@ -184,43 +203,31 @@ function App() {
         </div>
       )}
 
-      {/* Control Mode Selection */}
+      {/* Mode Selector */}
       <ModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
 
-      {/* Main Grid Layout */}
+      {/* Main Content */}
       <main className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column: Input Modes */}
+        {/* Left: Input Modes */}
         <div className="flex flex-col gap-6">
-          {/* Scan Camera Input */}
-          <ScanComponent onTextExtracted={handleTextExtracted} />
+          {(currentMode === 'scan' || currentMode === 'hybrid') && (
+            <ScanComponent onTextExtracted={handleTextExtracted} />
+          )}
 
-          {/* Voice Command Input */}
           {(currentMode === 'voice' || currentMode === 'hybrid') && (
             <VoiceComponent onCommandParsed={handleCommand} />
           )}
 
-          {/* Face Tracker */}
-          <FaceTracker 
-            isActive={currentMode === 'face' || currentMode === 'hybrid'} 
-            onGesture={handleFaceGesture} 
-          />
-
-          {/* Eye Tracker */}
-          <EyeTracking 
-            isActive={currentMode === 'eye' || currentMode === 'hybrid'} 
-            onCommand={handleCommand} 
-          />
-
-          {/* Switch Control */}
-          <SwitchControl 
-            isActive={currentMode === 'switch' || currentMode === 'hybrid'} 
-            onCommand={handleCommand}
-          />
+          {(currentMode === 'face' || currentMode === 'hybrid') && (
+            <FaceTracker 
+              isActive={true} 
+              onGesture={handleFaceGesture} 
+            />
+          )}
         </div>
 
-        {/* Right Column: AI Response, Music, Community, Accessibility Logs */}
+        {/* Right: Response + History */}
         <div className="flex flex-col gap-6">
-          {/* AI Response Box */}
           {latestCommand && (
             <AIResponseView 
               message={latestCommand.response} 
@@ -228,38 +235,25 @@ function App() {
             />
           )}
 
-          {/* Accessibility Service Logs */}
-          <AccessibilityServiceDemo 
-            latestCommand={latestCommand} 
-            onLogSave={() => setRefreshHistory(prev => prev + 1)} 
-          />
-
-          {/* Spotify Playback Controls */}
-          <SpotifyControls />
-
-          {/* Q&A Help Desk */}
-          <HelpDesk user={user} onSignIn={() => setIsAuthOpen(true)} />
-          
-          {/* Saved History */}
           <SavedItems refreshTrigger={refreshHistory} />
         </div>
       </main>
 
-      {/* PWA Floating Install Button */}
+      {/* PWA Install */}
       <InstallButton />
 
       {/* Footer */}
-      <footer className="text-center mt-8 pb-8 flex flex-col items-center gap-2 border-t border-outline-variant/35 pt-4">
-        <div className="flex items-center gap-3 text-sm font-bold text-on-surface-variant/70">
+      <footer className="text-center mt-8 pb-8 flex flex-col items-center gap-2 border-t border-emerald-900/20 pt-4">
+        <div className="flex items-center gap-3 text-sm font-semibold text-on-surface-variant">
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span> Offline Mode
+            <span className="w-2.5 h-2.5 rounded-full bg-secondary animate-pulse"></span> Offline Mode
           </span>
           <span>•</span>
-          <span>WCAG AAA Compliant</span>
+          <span>WCAG AAA</span>
           <span>•</span>
           <span>Zero Touch</span>
         </div>
-        <p className="text-xs text-accent-gold font-bold uppercase tracking-wider">Sahayak Project • Accessible by Design</p>
+        <p className="text-xs text-accent-gold font-bold uppercase tracking-wider">Sahayak • Accessibility Engine</p>
       </footer>
     </div>
   );

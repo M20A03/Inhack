@@ -7,7 +7,7 @@ interface FaceTrackerProps {
 }
 
 export function FaceTracker({ onGesture, isActive }: FaceTrackerProps) {
-  const { status, gestures, setGestures, videoRef, isMockMode } = useFaceTracking(isActive);
+  const { status, gestures, setGestures, setVideoRef, isMockMode } = useFaceTracking(isActive);
   const lastGestureTime = useRef<number>(0);
 
   // Handle detected gestures
@@ -45,61 +45,114 @@ export function FaceTracker({ onGesture, isActive }: FaceTrackerProps) {
   };
 
   return (
-    <div className="flex flex-col items-center p-5 bg-black shadow-sm rounded-2xl border border-yellow-500">
-      <h3 className="text-yellow-400 font-bold mb-3 flex items-center gap-2">
-        <span>👤</span> Face Tracker {isMockMode ? '(Simulator)' : 'Active'}
-      </h3>
-      
-      {!isMockMode ? (
-        <div className="relative w-48 h-48 rounded-full overflow-hidden border-4 border-yellow-400 shadow-md">
+    <div className="flex flex-col items-center p-6 bg-surface-dark shadow-lg rounded-3xl border border-emerald-900/30 transition-all duration-300 w-full">
+      <div className="flex justify-between items-center w-full mb-3">
+        <h3 className="text-primary font-bold flex items-center gap-2 text-lg font-display">
+          <span className="text-xl">👤</span> Face & Gesture Control
+        </h3>
+        <span className="text-[10px] bg-primary/20 text-primary px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-primary/30">
+          {isMockMode ? 'Interactive Triggers' : 'Camera Active'}
+        </span>
+      </div>
+
+      {/* Always-Live Camera Preview */}
+      <div className="relative w-full flex flex-col items-center justify-center my-2 gap-3">
+        <div className="relative w-44 h-44 rounded-full overflow-hidden border-4 border-primary shadow-md bg-slate-900">
           <video 
-            ref={videoRef}
+            ref={setVideoRef}
             autoPlay 
             playsInline 
+            muted
             className="w-full h-full object-cover transform -scale-x-100"
           ></video>
+          {/* Active Gesture Overlay Badge */}
+          {Object.values(gestures).some(Boolean) && (
+            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center animate-pulse">
+              <span className="bg-primary text-on-primary text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
+                {gestures.mouthOpen ? '👄 Open Mouth' : gestures.smile ? '😊 Smile' : gestures.winkLeft ? '😉 Left Wink' : gestures.winkRight ? '😉 Right Wink' : gestures.eyebrowsRaised ? '🤨 Eyebrows Up' : 'Active'}
+              </span>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="w-full bg-zinc-950 p-4 rounded-xl border border-yellow-500/20 text-center mb-2 flex flex-col gap-2">
-          <p className="text-xs text-yellow-500 font-bold">🖥️ WEB SCREEN SIMULATOR</p>
+
+        {/* 1-Tap Gesture Trigger Controls */}
+        <div className="w-full bg-deep-forest/40 p-4 rounded-2xl border border-emerald-900/20 text-center flex flex-col gap-2.5 shadow-inner">
+          <span className="text-xs text-primary font-bold uppercase tracking-wider">⚡ 1-Tap Gesture Triggers (Demo & Camera Sync)</span>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => triggerMockGesture('mouthOpen')}
-              className="py-3 bg-yellow-400 text-black font-bold rounded-lg text-xs"
+              className={`py-3 px-2 font-bold rounded-xl text-xs shadow-xs transition-all border ${
+                gestures.mouthOpen 
+                  ? 'bg-primary text-on-primary border-primary scale-105' 
+                  : 'bg-surface-dark text-primary border-emerald-900/30 hover:border-primary'
+              }`}
             >
-              👄 Open Mouth
+              👄 Open Mouth (Scroll)
             </button>
             <button
               onClick={() => triggerMockGesture('smile')}
-              className="py-3 bg-yellow-400 text-black font-bold rounded-lg text-xs"
+              className={`py-3 px-2 font-bold rounded-xl text-xs shadow-xs transition-all border ${
+                gestures.smile 
+                  ? 'bg-primary text-on-primary border-primary scale-105' 
+                  : 'bg-surface-dark text-primary border-emerald-900/30 hover:border-primary'
+              }`}
             >
-              😊 Smile
+              😊 Smile (Click)
             </button>
             <button
               onClick={() => triggerMockGesture('winkLeft')}
-              className="py-3 bg-yellow-400 text-black font-bold rounded-lg text-xs"
+              className={`py-3 px-2 font-bold rounded-xl text-xs shadow-xs transition-all border ${
+                gestures.winkLeft 
+                  ? 'bg-primary text-on-primary border-primary scale-105' 
+                  : 'bg-surface-dark text-primary border-emerald-900/30 hover:border-primary'
+              }`}
             >
-              😉 Left Wink
+              😉 Left Wink (Back)
             </button>
             <button
               onClick={() => triggerMockGesture('winkRight')}
-              className="py-3 bg-yellow-400 text-black font-bold rounded-lg text-xs"
+              className={`py-3 px-2 font-bold rounded-xl text-xs shadow-xs transition-all border ${
+                gestures.winkRight 
+                  ? 'bg-primary text-on-primary border-primary scale-105' 
+                  : 'bg-surface-dark text-primary border-emerald-900/30 hover:border-primary'
+              }`}
             >
-              😉 Right Wink
+              😉 Right Wink (Home)
             </button>
           </div>
         </div>
-      )}
+      </div>
 
-      <p className="mt-4 text-sm font-medium text-black bg-yellow-400 px-3 py-1 rounded-full">{status}</p>
-      
-      <div className="mt-4 text-xs font-medium text-yellow-300 text-center space-y-1 bg-zinc-900 p-3 rounded-xl border border-yellow-500/30 w-full">
-        <p>👄 <span className="text-yellow-400">Open Mouth</span> = Scroll Down</p>
-        <p>😊 <span className="text-yellow-400">Smile</span> = Click</p>
-        <p>🤨 <span className="text-yellow-400">Raise Eyebrows</span> = Right Click / Menu</p>
-        <p>😉 <span className="text-yellow-400">Left Wink</span> = Go Back</p>
-        <p>😉 <span className="text-yellow-400">Right Wink</span> = Go Home</p>
+      <p className="mt-2 text-xs font-semibold text-accent-gold bg-deep-forest/40 px-4 py-1.5 rounded-full border border-emerald-900/20">
+        {status}
+      </p>
+
+      {/* Gesture Action Legend */}
+      <div className="mt-4 text-xs font-medium text-on-surface-variant space-y-1.5 bg-deep-forest/40 p-4 rounded-2xl border border-emerald-900/20 w-full shadow-xs">
+        <p className="font-bold text-on-surface text-[11px] uppercase tracking-wider mb-2 border-b border-emerald-900/20 pb-1">Gesture Commands:</p>
+        <p className="flex justify-between">
+          <span>👄 Open Mouth:</span>
+          <span className="font-bold text-primary">Scroll Down</span>
+        </p>
+        <p className="flex justify-between">
+          <span>😊 Smile:</span>
+          <span className="font-bold text-primary">Select Item</span>
+        </p>
+        <p className="flex justify-between">
+          <span>🤨 Eyebrows Up:</span>
+          <span className="font-bold text-primary">Open Menu</span>
+        </p>
+        <p className="flex justify-between">
+          <span>😉 Left Wink:</span>
+          <span className="font-bold text-primary">Go Back</span>
+        </p>
+        <p className="flex justify-between">
+          <span>😉 Right Wink:</span>
+          <span className="font-bold text-primary">Go Home</span>
+        </p>
       </div>
     </div>
   );
 }
+
+

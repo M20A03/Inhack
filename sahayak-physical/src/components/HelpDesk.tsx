@@ -50,14 +50,14 @@ export function HelpDesk({ user, onSignIn }: HelpDeskProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-bold flex items-center gap-2 text-yellow-400">
-          <MessageSquare /> Accessibility Help Desk
+    <div className="flex flex-col gap-4 w-full bg-white border border-slate-200 rounded-3xl p-6 shadow-lg">
+      <div className="flex justify-between items-center mb-1">
+        <h2 className="text-xl font-bold flex items-center gap-2 text-emerald-800">
+          <MessageSquare className="text-emerald-600" /> Accessibility Help Desk
         </h2>
         <button
           onClick={handleNewPostClick}
-          className="p-2 bg-yellow-400 text-black font-bold rounded-xl flex items-center gap-1 text-xs"
+          className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1 text-xs shadow-sm transition-all"
         >
           {user ? <Plus size={16} /> : <Lock size={14} />} 
           {user ? 'New Post' : 'Sign in to Post'}
@@ -65,26 +65,26 @@ export function HelpDesk({ user, onSignIn }: HelpDeskProps) {
       </div>
 
       {isPosting && user && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3 bg-zinc-900 p-4 rounded-xl border border-yellow-500/50">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
           <input
             type="text"
             placeholder="Question Title (e.g. eye tracking winks)"
             value={newTitle}
             onChange={e => setNewTitle(e.target.value)}
-            className="w-full bg-black border border-yellow-500 rounded-lg p-3 text-yellow-400 placeholder-yellow-600 focus:outline-none"
+            className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-800 placeholder-slate-400 focus:outline-none"
           />
           <textarea
             placeholder="Describe your issue or tip..."
             value={newDesc}
             onChange={e => setNewDesc(e.target.value)}
             rows={3}
-            className="w-full bg-black border border-yellow-500 rounded-lg p-3 text-yellow-400 placeholder-yellow-600 focus:outline-none"
+            className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-800 placeholder-slate-400 focus:outline-none"
           />
           <div className="flex gap-2">
             <select
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="bg-black border border-yellow-500 text-yellow-400 rounded-lg p-3 focus:outline-none"
+              className="bg-white border border-slate-200 text-slate-800 rounded-xl p-3 focus:outline-none text-xs font-semibold"
             >
               <option value="General">General</option>
               <option value="Eye/Face Tracking">Eye/Face Tracking</option>
@@ -93,7 +93,7 @@ export function HelpDesk({ user, onSignIn }: HelpDeskProps) {
             </select>
             <button
               type="submit"
-              className="flex-1 bg-yellow-400 text-black font-bold rounded-lg flex items-center justify-center gap-2 hover:bg-yellow-300"
+              className="flex-1 bg-emerald-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-sm"
             >
               <Send size={16} /> Post Question
             </button>
@@ -103,18 +103,18 @@ export function HelpDesk({ user, onSignIn }: HelpDeskProps) {
 
       <div className="flex flex-col gap-3">
         {posts.map(post => (
-          <div key={post.id || post.title} className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 flex flex-col gap-2">
+          <div key={post.id || post.title} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col gap-2">
             <div className="flex justify-between items-start">
-              <span className="text-xs bg-yellow-400/20 text-yellow-400 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-semibold">
                 {post.category}
               </span>
-              <span className="text-xs text-yellow-500 font-mono">
+              <span className="text-xs text-slate-500 font-medium">
                 {post.replies} replies
               </span>
             </div>
-            <h3 className="text-base font-bold text-yellow-400">{post.title}</h3>
-            <p className="text-sm text-yellow-300">{post.description}</p>
-            <div className="text-xs text-yellow-600 flex justify-between mt-1">
+            <h3 className="text-base font-bold text-slate-800">{post.title}</h3>
+            <p className="text-sm text-slate-600">{post.description}</p>
+            <div className="text-xs text-slate-500 flex justify-between mt-1">
               <span>By {post.author}</span>
               <span>{new Date(post.timestamp).toLocaleDateString()}</span>
             </div>
@@ -124,3 +124,4 @@ export function HelpDesk({ user, onSignIn }: HelpDeskProps) {
     </div>
   );
 }
+

@@ -56,18 +56,18 @@ export function AccessibilityServiceDemo({ latestCommand, onLogSave }: Accessibi
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full bg-black border border-yellow-500 rounded-2xl p-6 mt-4">
+    <div className="flex flex-col gap-4 w-full bg-white border border-slate-200 rounded-3xl p-6 shadow-lg">
       <div className="flex items-start gap-4">
         <div className="relative">
-          <Smartphone className={isEnabled ? "text-yellow-400" : "text-zinc-600"} size={40} />
-          <ShieldAlert className="absolute -bottom-2 -right-2 text-yellow-400" size={20} />
+          <Smartphone className={isEnabled ? "text-emerald-600" : "text-slate-400"} size={40} />
+          <ShieldAlert className="absolute -bottom-2 -right-2 text-emerald-600" size={20} />
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-bold flex items-center justify-between text-yellow-400">
+          <h2 className="text-xl font-bold flex items-center justify-between text-emerald-800">
             Universal App Control
-            {isEnabled && <span className="flex h-3 w-3 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-400"></span></span>}
+            {isEnabled && <span className="flex h-3 w-3 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span></span>}
           </h2>
-          <p className="text-sm text-yellow-300 mt-1 leading-snug">
+          <p className="text-sm text-slate-600 mt-1 leading-snug">
             Grants Sahayak permission to read screens and simulate touches inside <b>ANY</b> installed app hands-free.
           </p>
         </div>
@@ -75,8 +75,8 @@ export function AccessibilityServiceDemo({ latestCommand, onLogSave }: Accessibi
 
       <button
         onClick={handleToggle}
-        className={`w-full py-4 rounded-xl font-bold text-lg transition-colors flex items-center justify-center gap-2 ${
-          isEnabled ? 'bg-zinc-900 text-yellow-400 border border-yellow-500' : 'bg-yellow-400 text-black hover:bg-yellow-300'
+        className={`w-full py-4 rounded-2xl font-bold text-base transition-colors flex items-center justify-center gap-2 shadow-sm ${
+          isEnabled ? 'bg-emerald-50 text-emerald-800 border border-emerald-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'
         }`}
       >
         {isEnabled ? (
@@ -85,22 +85,22 @@ export function AccessibilityServiceDemo({ latestCommand, onLogSave }: Accessibi
             Accessibility Service Active
           </>
         ) : (
-          'Enable Android Service (Mock)'
+          'Enable Android Accessibility Service'
         )}
       </button>
 
       {isEnabled && (
-        <div className="mt-2 bg-zinc-950 border border-yellow-500/30 rounded-lg p-3 font-mono text-xs text-yellow-400 overflow-hidden relative">
-           <div className="flex items-center gap-2 text-yellow-600 mb-2 border-b border-yellow-500/20 pb-2">
+        <div className="mt-1 bg-slate-50 border border-slate-200 rounded-2xl p-4 font-mono text-xs text-slate-700 overflow-hidden relative">
+           <div className="flex items-center gap-2 text-emerald-700 font-bold mb-2 border-b border-slate-200 pb-2">
              <Terminal size={14} />
              <span>Accessibility Node Dispatcher</span>
-             {isExecuting && <Loader size={14} className="ml-auto text-yellow-400 animate-spin" />}
+             {isExecuting && <Loader size={14} className="ml-auto text-emerald-600 animate-spin" />}
            </div>
            
-           <div className="flex flex-col gap-1 min-h-[100px] max-h-[200px] overflow-y-auto pb-4">
-              {logs.length === 0 && <span className="text-yellow-600">Awaiting commands... Say something like "Open WhatsApp".</span>}
+           <div className="flex flex-col gap-1 min-h-[100px] max-h-[200px] overflow-y-auto pb-2">
+              {logs.length === 0 && <span className="text-slate-500">Awaiting commands... Say something like "Open WhatsApp".</span>}
               {logs.map((log, i) => (
-                <div key={i} className="animate-fade-in">{log}</div>
+                <div key={i} className="animate-fade-in text-slate-800">{log}</div>
               ))}
            </div>
         </div>
@@ -108,3 +108,4 @@ export function AccessibilityServiceDemo({ latestCommand, onLogSave }: Accessibi
     </div>
   );
 }
+
