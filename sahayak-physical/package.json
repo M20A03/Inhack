@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "cap:add": "npx cap add android",
     "cap:sync": "npx cap sync",
-    "cap:open": "npx cap open android",
-    "apk:build": "npm run build && npx cap sync && npx cap open android"
+    "cap:open": "CAPACITOR_ANDROID_STUDIO_PATH=/snap/bin/android-studio npx cap open android",
+    "apk:build": "npm run build && npx cap sync && CAPACITOR_ANDROID_STUDIO_PATH=/snap/bin/android-studio npx cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",
