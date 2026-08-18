@@ -1,5 +1,5 @@
 // src/utils/accessibilityService.ts
-import { Command, parseCommand, generateResponse } from './commandProcessor';
+import { parseCommand, generateResponse } from './commandProcessor';
 
 export interface ExecutionResult {
   success: boolean;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { OCRComponent } from './components/OCRComponent';
 import { parseCommand, generateResponse } from './utils/commandProcessor';
 import { saveItem, getAllItems, deleteItem, clearAllItems, SavedItem } from './utils/storage';

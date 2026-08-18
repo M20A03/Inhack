@@ -1,4 +1,4 @@
-export async function performOCR(file: File): Promise<string> {
+export async function performOCR(_file: File): Promise<string> {
   return new Promise((resolve) => {
     console.log('Simulating PaddleOCR WASM processing...');
     setTimeout(() => {

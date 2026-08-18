@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Smartphone, ShieldAlert, CheckCircle, Terminal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Smartphone, ShieldAlert, CheckCircle, Terminal, Loader } from 'lucide-react';
 import { mockAccessibilityServiceStatus, toggleAccessibilityService } from '../utils/accessibility';
 import { AIResponse } from '../utils/localAI';
 import { saveItem } from '../utils/storage';
@@ -46,7 +46,7 @@ export function AccessibilityService({ latestCommand, onLogSave }: Accessibility
     
     // Save to offline storage automatically
     if (latestCommand?.response) {
-      await saveItem(latestCommand.response, 'voice_command');
+      await saveItem({ type: 'command', content: latestCommand.response, timestamp: Date.now() });
       if (onLogSave) onLogSave();
     }
   };
@@ -90,7 +90,7 @@ export function AccessibilityService({ latestCommand, onLogSave }: Accessibility
            <div className="flex items-center gap-2 text-gray-500 mb-2 border-b border-gray-800 pb-2">
              <Terminal size={14} />
              <span>Accessibility Node Dispatcher</span>
-             {isExecuting && <Activity size={14} className="ml-auto text-accent animate-spin" />}
+             {isExecuting && <Loader size={14} className="ml-auto text-accent animate-spin" />}
            </div>
            
            <div className="flex flex-col gap-1 min-h-[100px] max-h-[200px] overflow-y-auto pb-4">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ScanFace, Settings2, MousePointerClick, Activity } from 'lucide-react';
 
 export function FaceTracking() {

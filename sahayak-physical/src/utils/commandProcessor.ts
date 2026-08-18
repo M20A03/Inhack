@@ -23,7 +23,6 @@ const KNOWN_APPS = [
 
 export function parseCommand(transcript: string): Command {
   const lower = transcript.toLowerCase().trim();
-  const words = lower.split(' ');
 
   // --- Check for app opening ---
   for (const app of KNOWN_APPS) {

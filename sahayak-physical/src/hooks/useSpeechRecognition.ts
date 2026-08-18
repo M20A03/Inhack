@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);

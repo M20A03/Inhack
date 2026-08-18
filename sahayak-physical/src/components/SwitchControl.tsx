@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ToggleRight, Bluetooth, Navigation } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ToggleRight, Bluetooth } from 'lucide-react';
 
 export function SwitchControl() {
   const [isActive, setIsActive] = useState(false);

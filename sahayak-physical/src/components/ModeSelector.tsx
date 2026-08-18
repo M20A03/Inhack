@@ -1,4 +1,4 @@
-import React from 'react';
+// ModeSelector component
 import { Mic, ToggleRight, ScanFace, Eye, Combine } from 'lucide-react';
 
 export type ControlMode = 'voice' | 'switch' | 'face' | 'eye' | 'hybrid';

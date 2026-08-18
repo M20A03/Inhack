@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trash2, ArchiveX, Database } from 'lucide-react';
-import { getSavedItems, deleteItem, clearAllItems } from '../utils/storage';
+import { getAllItems, deleteItem, clearAllItems } from '../utils/storage';
 
 interface SavedItemsProps {
   refreshTrigger: number;
@@ -14,7 +14,7 @@ export function SavedItems({ refreshTrigger }: SavedItemsProps) {
   }, [refreshTrigger]);
 
   const loadItems = async () => {
-    const data = await getSavedItems();
+    const data = await getAllItems();
     setItems(data.reverse()); // latest first
   };
 

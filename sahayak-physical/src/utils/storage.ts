@@ -14,7 +14,7 @@ export async function initDB() {
   if (db) return db;
   
   db = await openDB('SahayakDB', 2, {
-    upgrade(upgradeDb, oldVersion, newVersion) {
+    upgrade(upgradeDb, _oldVersion, _newVersion) {
       if (!upgradeDb.objectStoreNames.contains('items')) {
         const store = upgradeDb.createObjectStore('items', { 
           keyPath: 'id', 

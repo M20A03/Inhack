@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Mic, MicOff, Command } from 'lucide-react';
-import { useSpeechRecognition, speakText } from '../hooks/useSpeechRecognition';
+import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 
 interface VoiceControlProps {
   onCommandParsed: (transcript: string) => void;
