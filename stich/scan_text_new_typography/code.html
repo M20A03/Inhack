@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Sahayak - Scan Text</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&amp;family=Lexend:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#ffdad6",
+                        "accent-gold": "#FFB800",
+                        "outline-variant": "#414943",
+                        "surface-variant": "#333533",
+                        "background": "#121412",
+                        "surface-container": "#1e201e",
+                        "surface": "#121412",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#002112",
+                        "primary-fixed-dim": "#a4d1b6",
+                        "on-error": "#690005",
+                        "on-primary": "#0c3825",
+                        "inverse-on-surface": "#2f312f",
+                        "on-secondary": "#003822",
+                        "secondary": "#6bdba2",
+                        "secondary-container": "#2ca470",
+                        "on-tertiary": "#4e2427",
+                        "secondary-fixed": "#88f8bd",
+                        "on-surface": "#e2e3df",
+                        "surface-container-low": "#1a1c1a",
+                        "surface-container-lowest": "#0c0f0d",
+                        "tertiary": "#ffe0e0",
+                        "surface-container-high": "#282b28",
+                        "error": "#ffb4ab",
+                        "primary-fixed": "#bfedd1",
+                        "on-tertiary-fixed-variant": "#68393d",
+                        "surface-dark": "#16442C",
+                        "surface-container-highest": "#333533",
+                        "inverse-surface": "#e2e3df",
+                        "surface-bright": "#373a37",
+                        "tertiary-container": "#fcbabd",
+                        "secondary-fixed-dim": "#6bdba2",
+                        "on-primary-fixed-variant": "#254f3a",
+                        "on-secondary-container": "#00311d",
+                        "surface-dim": "#121412",
+                        "primary-container": "#a8d5ba",
+                        "on-primary-container": "#345d48",
+                        "tertiary-fixed-dim": "#f7b6b9",
+                        "surface-tint": "#a4d1b6",
+                        "on-tertiary-container": "#79474b",
+                        "off-white": "#F4F7F5",
+                        "on-primary-fixed": "#002113",
+                        "on-background": "#e2e3df",
+                        "outline": "#8b938c",
+                        "tertiary-fixed": "#ffdadb",
+                        "on-surface-variant": "#c1c8c1",
+                        "on-tertiary-fixed": "#340f13",
+                        "primary": "#c4f1d5",
+                        "deep-forest": "#0B301B",
+                        "inverse-primary": "#3d6751",
+                        "on-secondary-fixed-variant": "#005233"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "margin-mobile": "24px",
+                        "margin-desktop": "64px",
+                        "touch-target": "64px",
+                        "section-gap": "48px",
+                        "element-gap": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Lexend"],
+                        "display-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "headline-lg-mobile": ["Playfair Display"],
+                        "headline-lg": ["Playfair Display"],
+                        "label-md": ["Lexend"],
+                        "label-lg": ["Lexend"],
+                        "body-md": ["Lexend"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["20px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "display-md": ["40px", { "lineHeight": "48px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-md": ["16px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "label-lg": ["18px", { "lineHeight": "24px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-md": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-deep-forest text-on-surface font-body-lg min-h-screen flex flex-col pb-[100px] md:pb-0">
+<!-- TopAppBar (Mobile & Desktop) -->
+<header class="fixed top-0 w-full z-50 bg-deep-forest/60 backdrop-blur-md flex justify-between items-center px-margin-mobile h-touch-target border-b border-surface-variant md:hidden">
+<button aria-label="Menu" class="active:scale-95 transition-transform duration-200 text-primary p-2 -ml-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-md text-display-md font-bold text-primary">Sahayak</h1>
+<div aria-label="User profile avatar" class="w-10 h-10 rounded-full bg-surface-dark border border-secondary flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+</div>
+</header>
+<!-- Desktop Sidebar (Hidden on Mobile) -->
+<aside class="hidden md:flex fixed top-0 left-0 h-full w-80 rounded-r-xl bg-surface-dark shadow-xl flex-col py-margin-mobile z-40 border-r border-deep-forest">
+<div class="px-margin-mobile mb-8 flex items-center gap-4">
+<div aria-label="User Profile" class="w-14 h-14 rounded-full bg-deep-forest border border-secondary flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="person">person</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Sahayak User</h2>
+<p class="font-body-md text-body-md text-accent-gold">Accessibility Enabled</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-all duration-300 mx-2 rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-margin-mobile py-4 bg-secondary-container text-on-secondary-container font-bold rounded-full mx-2 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="document_scanner">document_scanner</span>
+<span class="font-body-md text-body-md">Scan Text</span>
+</a>
+<a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-all duration-300 mx-2 rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="settings_voice">settings_voice</span>
+<span class="font-body-md text-body-md">Voice Settings</span>
+</a>
+<a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-all duration-300 mx-2 rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-body-md text-body-md">Text History</span>
+</a>
+<a class="flex items-center gap-4 px-margin-mobile py-4 text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-all duration-300 mx-2 rounded-full" href="#">
+<span class="material-symbols-outlined" data-icon="face_retouching_natural">face_retouching_natural</span>
+<span class="font-body-md text-body-md">Face Calibration</span>
+</a>
+</nav>
+<div class="px-margin-mobile mt-auto">
+<a class="flex items-center gap-4 py-4 text-on-surface-variant hover:text-primary transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-md text-body-md">Help &amp; Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-touch-target md:pt-margin-desktop md:ml-80 px-margin-mobile md:px-margin-desktop max-w-5xl mx-auto w-full">
+<!-- Header -->
+<header class="mb-section-gap pt-8">
+<h2 class="font-display-lg text-headline-lg-mobile md:text-display-lg text-primary mb-4">Scan Text</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Point your camera at any document, sign, or screen to extract and read the text aloud.</p>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-element-gap md:gap-gutter pb-section-gap">
+<!-- Camera Preview Area (Spans 8 cols on desktop) -->
+<div class="col-span-1 md:col-span-8 bg-surface-dark rounded-xl border border-outline-variant overflow-hidden flex flex-col relative min-h-[400px]">
+<!-- Simulated Camera Feed -->
+<div class="absolute inset-0 bg-black">
+<img class="w-full h-full object-cover opacity-60" data-alt="A slightly blurred, first-person view looking down at a wooden desk. On the desk is an official university welcome document printed on crisp white paper with a subtle crest. The lighting is bright and even, simulating a mobile phone camera's perspective attempting to focus on the text. The overall color palette is dark, with the bright paper providing a strong focal point." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1c1p1FcYzOLiiGG8ROAf9nSOzuHr-uEq1EUjTCk-vBgd9r_syo0PGKml5tzLB9A65u4Xa3rr70NNhzhaVReoheGhALLg0DCDH0OCcMw1zGs_2t2tASe2d-VJ9s2oLHE97Q7F3-M_umy9HGsRc4j_knstyRWJ3g3UBwCxR8XJRhW-uU8W4R7b6GjHlDANm8bDNua8t_7gWIkkJwSz6kqQ0grDG9Bw39UncciveNiRfAbAk4HwmRVY"/>
+</div>
+<!-- Scanning UI Overlay -->
+<div class="absolute inset-0 border-4 border-secondary/30 m-8 rounded-lg pointer-events-none flex items-center justify-center">
+<div class="w-full h-1 bg-secondary animate-pulse opacity-50 absolute"></div>
+</div>
+<!-- Camera Controls -->
+<div class="mt-auto z-10 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-center">
+<button class="h-touch-target w-touch-target rounded-full bg-surface-variant/80 backdrop-blur text-primary flex items-center justify-center hover:bg-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined" data-icon="flash_on">flash_on</span>
+</button>
+<button class="h-16 w-16 rounded-full border-4 border-primary bg-secondary-container flex items-center justify-center shadow-[0_0_15px_rgba(44,164,112,0.5)] active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="camera">camera</span>
+</button>
+<button class="h-touch-target w-touch-target rounded-full bg-surface-variant/80 backdrop-blur text-primary flex items-center justify-center hover:bg-surface-variant transition-colors border border-outline-variant">
+<span class="material-symbols-outlined" data-icon="image">image</span>
+</button>
+</div>
+</div>
+<!-- Result & Actions Panel (Spans 4 cols on desktop) -->
+<div class="col-span-1 md:col-span-4 flex flex-col gap-element-gap">
+<!-- Detected Text Result -->
+<div class="bg-surface-dark rounded-xl border border-secondary p-6 flex-grow flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+<div class="flex items-center gap-2 mb-4 text-secondary">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+<h3 class="font-label-lg text-label-lg uppercase tracking-wider">Text Detected</h3>
+</div>
+<div class="bg-surface p-4 rounded-lg border border-outline-variant flex-grow overflow-y-auto">
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                            Welcome to Christ University
+                        </p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-4">
+<button class="w-full h-touch-target bg-primary rounded-xl text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-3 active:scale-95 transition-transform duration-200 shadow-[0_0_20px_rgba(196,241,213,0.15)] hover:bg-secondary">
+<span class="material-symbols-outlined" data-icon="volume_up" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+                        Read Aloud
+                    </button>
+<button class="w-full h-touch-target bg-surface-container rounded-xl text-primary font-label-lg text-label-lg flex items-center justify-center gap-3 border border-outline-variant active:scale-95 transition-transform duration-200 hover:bg-surface-bright">
+<span class="material-symbols-outlined" data-icon="refresh">refresh</span>
+                        Scan Again
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-touch-target px-gutter pb-safe bg-deep-forest/60 backdrop-blur-md border-t border-surface-variant rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="mic">mic</span>
+<span class="font-label-md text-label-md mt-1">Voice</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 w-16 h-14 active:scale-90 transition-transform shadow-[0_0_10px_rgba(44,164,112,0.3)]" href="#">
+<span class="material-symbols-outlined" data-icon="document_scanner" style="font-variation-settings: 'FILL' 1;">document_scanner</span>
+<span class="font-label-md text-label-md mt-1">Scan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="face">face</span>
+<span class="font-label-md text-label-md mt-1">Face</span>
+</a>
+</nav>
+</body></html>
