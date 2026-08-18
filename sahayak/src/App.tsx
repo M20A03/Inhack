@@ -83,8 +83,8 @@ function App() {
     }
 
     // Execute deep link trigger (actually open apps / maps / call dialer on the phone)
-    if (result && result.command) {
-      executeDeepLink(result.type, result.command.target, result.command.text || result.command.contact);
+    if (result && result.type) {
+      executeDeepLink(result.type, result.command?.target, result.command?.text || result.command?.contact);
     }
   };
 

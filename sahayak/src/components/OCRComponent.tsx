@@ -12,6 +12,42 @@ export function OCRComponent({ onTextExtracted, speakText }: OCRComponentProps) 
   const [status, setStatus] = useState('Ready (Offline Tesseract OCR)');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Pre-process image on HTML canvas to boost OCR accuracy for medicine strips & labels
+  const preprocessImage = (imageSrc: string | File): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(typeof imageSrc === 'string' ? imageSrc : URL.createObjectURL(imageSrc));
+          return;
+        }
+        canvas.width = Math.min(img.width, 1024);
+        canvas.height = Math.round((canvas.width / img.width) * img.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Enhance contrast for medicine labels
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imgData.data;
+        for (let i = 0; i < d.length; i += 4) {
+          const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
+          const v = avg > 125 ? 255 : 0;
+          d[i] = v;
+          d[i + 1] = v;
+          d[i + 2] = v;
+        }
+        ctx.putImageData(imgData, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = () => {
+        resolve(typeof imageSrc === 'string' ? imageSrc : URL.createObjectURL(imageSrc));
+      };
+      img.src = typeof imageSrc === 'string' ? imageSrc : URL.createObjectURL(imageSrc);
+    });
+  };
+
   // Handle image upload and OCR processing
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -22,9 +58,10 @@ export function OCRComponent({ onTextExtracted, speakText }: OCRComponentProps) 
     setProgress('0%');
 
     try {
+      const processedSource = await preprocessImage(file);
       // Run local Tesseract.js OCR
       const result = await Tesseract.recognize(
-        file,
+        processedSource,
         'eng',
         {
           logger: (m) => {
@@ -37,7 +74,7 @@ export function OCRComponent({ onTextExtracted, speakText }: OCRComponentProps) 
 
       const extractedText = result.data.text.trim();
       
-      if (extractedText) {
+      if (extractedText && extractedText.length > 2) {
         onTextExtracted(extractedText);
         speakText(`Scanned successfully: ${extractedText.substring(0, 60)}...`);
         setStatus('✅ Scan complete!');
